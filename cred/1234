@@ -1,0 +1,10 @@
+{
+  "cred": {
+    "id": 1234,
+    "pass": "26cebe840ae2a2aacee5"
+  },
+  "info": {
+    "name": "Nikolas Kohvakka",
+    "admin": "true"
+  }
+}

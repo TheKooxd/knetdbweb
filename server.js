@@ -3,20 +3,38 @@ var connect = require('connect');
 var fs = require('fs');
 var session = require('./node_modules/sesh/lib/core').magicSession();
 
+var crypto = require('crypto'),
+algorithm = 'aes-256-ctr',
+password = 'asdkjkEjkajsdlkasd445446asd';
 var app = connect();
 var par;
 var resCode;
 var usrId;
 var usrInfo;
 
+function encrypt(text, callback){
+  var cipher = crypto.createCipher(algorithm,password)
+  var crypted = cipher.update(text,'utf8','hex')
+  crypted += cipher.final('hex');
+  callback(crypted)
+}
+
+function decrypt(text, callback){
+
+  var decipher = crypto.createDecipher(algorithm,password)
+  var dec = decipher.update(text,'hex','utf8')
+  dec += decipher.final('utf8');
+  console.log(dec);
+	callback(dec);
+}
+
 function getPar(request, response, next) //Reads URL parameters to object and saves them to global variable "par"
 {
-	xor_str("kaksi", function(data){
-		console.log(data);
-		decrypt_str(data, function(data){
+	encrypt("reservi", function(data){
 		console.log(data);
 	});
-	});
+		
+
 	par = request.url.slice(2);
 	par = JSON.parse('{"' + decodeURI(par.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}')
 	console.log(par);
@@ -71,7 +89,6 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 		next();
 		}
 	}
-
 }
 
 
@@ -86,56 +103,39 @@ function getRequest(callback) //Figures out what to do with request data
 	}
 }
 
+function getUsrInfo(callback)
+{
+fs.readFile('cred/'+usrId, 'utf8', function (err, data) {
+  if (err) throw err;
+  usrInfo = JSON.parse(data);
+  	callback(usrInfo);
+
+});
+}
+
+
 function checkLogin(callback) //Needs somekind of lock function for encryptor but not big deal yet
 {
-	fs.readFile("../kat/cred/"+par.id, 'utf8', function (err,data) { //Read user credentials file
- 	 if (err) {
-    	console.log(err);
- 	 }
- 	 inCrypt(par.pass, function(){
- 	 outCrypt(function(usrPass){ //Anonymous function to wait for outCrypt's() callback (There is some latency becase of file systems)
- 	 //	usrPass[0] = usrPass[0].substring(0, usrPass[0].length - 1);
- 	 	console.log("usrPass: "+usrPass[0]);
- 	 	console.log("relPass: "+data);
- 	 	if(data == usrPass[0])
- 	 	{
- 	 		callback(200);
- 	 	}
- 	 	else
- 	 	{
- 	 		callback(403);
- 	 	}
- 	});
-	});
- 	 });
+fs.readFile('cred/'+par.id, 'utf8', function (err, data) {
+  if (err) throw err;
+  usrInfo = JSON.parse(data);
+  encrypt(par.pass, function(usrPass){
+  	console.log(usrPass);
 
+  
+  console.log(usrInfo.cred.pass);
+  if(usrPass == usrInfo.cred.pass)
+  {
+  	callback(200);
+  }
+  else
+  {
+  	callback(403);
+  }
+ });
+});
 }
 
-function inCrypt(data, callback)
-{
-	 fs.writeFile("io.dat", data, function(err,data) { //Inputs user given password to c++ API encrypter to check password
-    if(err) {
-       console.log(err);
-    }
-    setTimeout(function(){
-    callback();
-    },100);
-    console.log(data);
-}); 
-}
-
-function outCrypt(callback)
-{
-	fs.readFile("out.dat", 'utf8', function (err,data) { //Read user credentials file
- 	 if (err) {
-    	console.log(err);
- 	 }
- 	 toArray(data, function(array){
- 	 		console.log(array);
- 	 		callback(array);
- 	 });
-	});
-}
 
 function toArray(data, callback)
 {
@@ -143,58 +143,6 @@ function toArray(data, callback)
 	callback(data)
 }
 
-function giveSession(request, response, next)
-{
-	console.log("on");
-	request.session.data.user = "1234";
-
-}
-
-function getUsrInfo(callback)
-{
-		fs.readFile("../kat/usr/"+usrId, 'utf8', function (err,data) 
-		{ 
- 	 if (err) {
-    	console.log(err);
- 	 }
- 	 inCrypt(data, function(){
- 	 outCrypt(function(usrInfo){
- 	 	usrInfo[2]++
- 	 	if(Math.sqrt(Math.pow(usrInfo[1]*61,2)) == usrInfo[2]++)
-		 	 {
-		 	 	usrInfo[2] = "true";
-		 	 }
-		else
-		{
-			usrInfo[2] = "false";
-		}
-  	 	callback(usrInfo);
- 	 	
- 	 });
- 	 });
-	});
-}
-
-function searchDatabase(term, callback)
-{
-	fs.readFile('../kat/database/"-57+', 'utf8', function (err,data){
-		toArray(data, function(index){
-		index.forEach(getTags, function(tags){
-			//console.log(tags);
-		});
-	});
-	});
-}
-
-
-function decrypt(data, callback)
-{
-	inCrypt(data, function(){
-		outCrypt(function(data){
-			callback(data);
-		});
-	});
-}
 
 function responder(request, response, next)
 {
@@ -207,13 +155,13 @@ function responder(request, response, next)
 	if(par.origin == "usrPage" && resCode == 200 && par.request == "usrName")
 	{
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
-		response.write(usrInfo[0]);
+		response.write(usrInfo.info.name);
 		next();
 	}
 	if(par.origin == "usrPage" && resCode == 200 && par.request == "isAdmin")
 	{
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
-		response.write(usrInfo[2]);
+		response.write(usrInfo.info.admin);
 		next();
 	}
 	if(par.origin == "login" && resCode == 200)
