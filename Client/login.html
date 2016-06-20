@@ -15,7 +15,7 @@
 <br>
 <input type = "password" id = pass value = "Pass" onclick="removeTextPass()">
 <br>
-<input class="btn btn-warning" type = "submit" onclick = "getCode()" name = "submit" value = "LOGIN" id="btnMargin2">
+<input class="btn btn-warning" type = submit onclick = "getCode()" name = "submit" value = "LOGIN" id="btnMargin2">
 </div>
  <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 	<script type="text/javascript">
@@ -43,6 +43,7 @@ data = $.ajax({
 
 			},
 			error: function(data) {
+				console.log(data);
 				if(data.status == 403)
 				{
 					document.getElementById("Box").style = "display:block";

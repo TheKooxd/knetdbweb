@@ -8,6 +8,9 @@
  </head>
  <body>
  <div id="controls">
+  <button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
+  <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+</button>
 <input type="button" class="btn btn-danger" value="logout" onclick="logout()">
 </div>
  <div id="header">
@@ -17,6 +20,7 @@
  <li class="nav"><a href="user.html">Front Page</a></li>
  <li class="nav active"><a href="database.html">Database</a></li>
  <li class="nav disabled"><a href="usr.html">User Search</a></li>
+  <li class="nav" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
  <li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
  </ul>
  <div id="content">
@@ -39,6 +43,7 @@
 			if(admin == "true")
 			{
 			document.getElementById("dash").style = "display:block";
+			document.getElementById("um").style = "display:block";
 		}
 		});
 		}

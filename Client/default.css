@@ -100,6 +100,8 @@ h2{
 	margin:0px;
 }
 
+
+
 #controls{
 	margin: auto;
 	width: 98%;
@@ -116,4 +118,33 @@ float:left;
 
 #container{
 	text-align: center;
+}
+
+
+div.inv-box{
+	margin: 10px;
+	width: 33%;
+	margin-left: 0px;
+	float:left;
+	display: inline;
+}
+
+.left{
+	align-self: left;
+}
+
+.right{
+	align-self: 
+}
+
+hr
+{
+	margin: 5px;
+}
+
+.clearfix { display: inline-block; }
+
+.padding{
+	align: right;
+	margin-right: 50px;
 }
