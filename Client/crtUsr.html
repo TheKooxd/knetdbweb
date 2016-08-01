@@ -19,28 +19,32 @@
  <ul class="nav">
  <li class="nav"><a href="user.html">Front Page</a></li>
  <li class="nav"><a href="database.html">Database</a></li>
- <li class="nav disabled"><a href="usr.html">User Search</a></li>
+ <li class="nav"><a href="usr.html">User Info</a></li>
  <li class="nav active" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
   <ul class="">
- <li class="nav"><a href="usrMgmnt.html">User Overview</a></li>
- <li class="nav"><a href="crtUsr.html">Search Users</a></li>
+ <li class="nav"><a href="usrMgmt.html">User Overview</a></li>
+ <li class="nav"><a href="searchUsr.html">Search Users</a></li>
   <li class="nav active"><a href=".html">Create Users</a></li>
  </ul>
  <li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
  </ul>
  <div id="content">
+ <div id="Box" class "null" style="display:none">
+ </div>
 <h2 id="userWelcome"> User Creator </h2>
 <hr>
 <div class="inv-box">
 <h3>Please input to every form.</h3>
 <div class="clearfix"></div>
-<form method="GET" action="/api">
+<form method="GET" action="/api" id="usrForm">
 <input type="hidden" name="origin" value="crtUsr">
 <input type="hidden" name="request" value="crtUsr">
 Name: <input class="padding" type="text" name="name"><br>
 ID: <input type="text" name="id"><br>
 Password: <input type="password" name="pass"><br>
 Admin: Yes: <input type="radio" name="admin" value="true">No: <input type="radio" name="admin" value="false" checked="checked"><br>
+Staff: Yes: <input type="radio" name="staff" value="true">No: <input type="radio" name="staff" value="false" checked="checked"><br>
+Operator: Yes: <input type="radio" name="op" value="true">No: <input type="radio" name="op" value="false" checked="checked"><br>
 Email: <input type="text" name="email"><br>
 GSM: <input type="text" name="gsm"><br>
 
@@ -72,5 +76,12 @@ GSM: <input type="text" name="gsm"><br>
 		}
 		getAdmin();
 		getUsers();
+		function success()
+		{
+			document.getElementById("Box").style = "display:block";
+		document.getElementById("Box").innerHTML = "<p class='Box'>User Created!</p>";
+		document.getElementById("Box").className = "success";
+		document.getElementById("usrForm").reset();
+		}
 	</script>
  </html>

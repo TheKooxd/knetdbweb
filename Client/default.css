@@ -100,7 +100,13 @@ h2{
 	margin:0px;
 }
 
+a:link{
+	color: black;
+}
 
+a:hover{
+	color: #99e699;
+}
 
 #controls{
 	margin: auto;

@@ -22,57 +22,56 @@
  <li class="nav"><a href="usr.html">User Info</a></li>
  <li class="nav active" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
   <ul class="">
- <li class="nav active"><a href="usrMgmnt.html">User Overview</a></li>
+ <li class="nav active"><a href="usrMgmt.html">User Overview</a></li>
  <li class="nav"><a href="searchUsr.html">Search Users</a></li>
   <li class="nav"><a href="crtUsr.html">Create Users</a></li>
  </ul>
  <li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
  </ul>
  <div id="content">
-<h2 id="userWelcome"> User Manager </h2>
+<h2 id="userWelcome"> Users Needing Attention </h2>
 <hr>
-<div class="inv-box">
-<h3> Total Users In System </h3>
-<hr>
-<a href="usrList.html"><h1 id="usrCount">Crunshing Data...</h2></a>
-</div>
-<div class="inv-box">
-<h3> Accounts Needing Attention </h3>
-<hr>
-<a href="usrAtt.html"><h1 id="usrCount2">Crunshing Data...</h2></a>
+<div id="tablePrint"> </div>
+<table class='table table-striped' id="usrTbl">
+
+ </table>
 </div>
  </div>
  </body>
   <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 	<script type="text/javascript">
 	var api = "http://knet.kcorporation.tk/api";
+		var write = "<tr id='usrTr'><th>ID</th><th>Name</th><th>Creation date</th><th>Admin</th></tr>";
+	var usrName;
 		function getAdmin(){
 		request("usrPage", "isAdmin", function(admin){
-		console.log(admin);
 			if(admin == "true")
 			{
 			document.getElementById("dash").style = "display:block";
 			document.getElementById("um").style = "display:block";
 		}
-		getUsers();
+		getAttention();
 		});
-		}
-		function getUsers()
-		{
-			request("usrMgr", "totalUsers", function(users){
-				var usrArr = users.split(',');
-				document.getElementById("usrCount").innerHTML = usrArr.length+" users";
-				getAttention();
-			});
 		}
 		function getAttention()
 		{
 		request("usrPage", "getAttention", function(att){
-				console.log(att);
-				var usrArr = att.split(',');
-				console.log(usrArr);
-				document.getElementById("usrCount2").innerHTML = usrArr.length+" users";
+			var usrArr = att.split(',');
+			console.log(att);
+			usrArr.forEach(function(usr, index){
+			usrReq("usrPage", "usrInfo", usr, function(att){
+				att = JSON.parse(att);
+				write = write + "<tr id='usrTr'><td><a href='usrInfo.html?usrId="+att.cred.id+"'>"+ att.cred.id +"</a></td></a><td>"+ att.info.name +"</td><td>n/a</td><td>"+att.info.admin+"</td></tr>"
+				if(index == 0)
+				{
+					render();
+				}
 			});
+			});
+			});
+		}
+		function render(){
+			document.getElementById("usrTbl").innerHTML = write;
 		}
 		getAdmin();
 	</script>

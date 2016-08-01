@@ -26,17 +26,12 @@ function decrypt(text, callback){
   var decipher = crypto.createDecipher(algorithm,password)
   var dec = decipher.update(text,'hex','utf8')
   dec += decipher.final('utf8');
-  console.log(dec);
 	callback(dec);
 }
 
 function getPar(request, response, next) //Reads URL parameters to object and saves them to global variable "par"
 {
-	encrypt("reservi", function(data){
-		console.log(data);
-	});
-		
-	console.log(request);
+
 	par = request.url.slice(2);
 	par = JSON.parse('{"' + decodeURI(par.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}')
 	console.log(par);
@@ -48,12 +43,19 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 			});
 		}
 
+		if(par.request == "getAttention")
+		{
+			getAttention(function(code){
+				resCode = code;
+				next();
+			});
+		}
+
+
 	if(par.origin == "login")
 	{
-		console.log(request.session);
-		console.log("getPar ready");
+
 		getRequest(function(code){
-			console.log(code);
 			resCode = code;
 			next();
 		}
@@ -66,7 +68,6 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 		if(par.request == "search")
 		{
 			searchDatabase(par.term, function(result){
-				console.log(result);
 			});
 		}
 	}
@@ -78,7 +79,7 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 		if(par.request == "crtUsr")
 		{
 			crtUsr(function(code){
-
+				next();
 			});
 		}
 	}
@@ -96,10 +97,16 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 
 	if(par.origin == "usrPage")
 	{
-		if(par.request == "usrName")
+		if(par.request == "usrName" || par.request == "usrInfo")
 		{
-		console.log(request.session);
+		if(par.usrId != undefined)
+		{
+			usrId = par.usrId;
+		}
+		else
+		{
 		usrId = request.session.data.user;
+		}
 		getUsrInfo(function(callback){
 			usrInfo = callback;
 			next();
@@ -110,7 +117,6 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 		
 		if(par.request == "logout")
 		{
-		console.log(request.session);
 		request.session.data.user = "Guest";
 		next();
 		}
@@ -144,9 +150,12 @@ fs.readFile('cred/'+usrId, 'utf8', function (err, data) {
   {
   	callback(403);
   }
-  usrInfo = JSON.parse(data);
-  	callback(usrInfo);
+  if(data != undefined)
+  {
 
+  	  usrInfo = JSON.parse(data);
+  	callback(usrInfo);
+}
 });
 }
 
@@ -191,12 +200,15 @@ function toArray(data, callback)
 function getUsrs(callback)
 {
 	getUsrInfo(function(reqUsr){
+		if(reqUsr.info.admin != undefined)
+		{
 		if(reqUsr.info.admin == "true")
 		{
 		fs.readdir("cred/", function (err, files) {
     if (err) {
         throw err;
     }
+    console.log(files);
     callback(files)
 });
 		}
@@ -204,6 +216,7 @@ function getUsrs(callback)
 		{
 			callback(403);
 		}
+	}
 	});
 }
 
@@ -214,6 +227,7 @@ function crtUsr(callback)
 			encrypt(par.pass, function(pass){
 		if(reqUsr.info.admin == "true")
 		{
+			console.log(par);
 			var usr = {
 				"cred" : {
 					"id": par.id,
@@ -224,7 +238,10 @@ function crtUsr(callback)
 					"gsm": par.gsm,
 					"email": par.email,
 					"admin": par.admin,
-					"attention": "false"
+					"attention": "false",
+					"user": "true",
+					"staff": par.staff,
+					"operator": par.op
 				}
 			};
 			usr.info.name = par.name;
@@ -273,6 +290,55 @@ function setAttention(callback)
 	});
 }
 
+function getAttention(callback)
+{
+	var res1 = [];
+	getUsrInfo(function(reqUsr){
+		if(reqUsr.info.admin == "true")
+		{
+	var usrCache;
+	getUsrs(function(users){
+		var index = 1;
+		users.forEach(function(user){
+		fs.readFile('cred/'+user, 'utf8', function (err, data) {
+		usrCache = JSON.parse(data);
+		if(usrCache.info.attention == "true")
+		{
+			res1.push(usrCache.cred.id);
+						
+		}
+		if(index == users.length)
+		{
+			callback(res1);
+		}
+
+	index++;
+		});
+		
+		});
+			
+	});
+}
+});
+
+}
+
+
+function userArr(user, callback)
+{
+	var res1 = [];
+		fs.readFile('cred/'+user, 'utf8', function (err, data) {
+				usrCache = JSON.parse(data);
+				if(usrCache.info.attention == "true")
+					{
+						res1.push(usrCache.cred.id);
+						
+					}
+					callback(res1);
+				});
+		
+}
+
 function responder(request, response, next)
 {
 	if(par.origin == "usrPage" && par.request == "logout")
@@ -281,10 +347,20 @@ function responder(request, response, next)
 		response.write("User logged off");
 		next();
 	}
-	if(par.origin == "usrPage" && resCode == 200 && par.request == "usrName")
+	if(par.origin == "usrPage" && par.request == "usrName")
 	{
+		console.log(usrInfo.info.name);
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
 		response.write(usrInfo.info.name);
+		resCode = 200;
+		next();
+	}
+	if(par.origin == "usrPage" && par.request == "usrInfo")
+	{
+		console.log(usrInfo.info.name);
+		response.writeHead(200, {"Content-Type: ": "text/plain"});
+		response.write(JSON.stringify(usrInfo));
+		resCode = 200;
 		next();
 	}
 	if(par.origin == "usrPage" && resCode == 200 && par.request == "attention")
@@ -293,15 +369,22 @@ function responder(request, response, next)
 		response.write("Attention set");
 		next();
 	}
-	if(par.origin == "usrPage" && resCode == 200 && par.request == "isAdmin")
+	if(par.origin == "usrPage" && par.request == "getAttention")
+	{
+		response.writeHead(200, {"Content-Type: ": "text/plain"});
+		response.write(resCode.toString());
+		resCode = 200;
+		next();
+	}
+	if(par.origin == "usrPage" && par.request == "isAdmin")
 	{
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
 		response.write(usrInfo.info.admin);
+		resCode = 200;
 		next();
 	}
-	if(par.origin == "usrMgr" && resCode != 403 && par.request == "totalUsers")
+	if(par.origin == "usrMgr" && par.request == "totalUsers")
 	{
-		console.log(resCode[0]);
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
 		response.write(resCode.toString());
 		resCode = 200;
@@ -320,6 +403,13 @@ function responder(request, response, next)
 	{
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
 		response.write(request.session);
+		response.end();
+		
+	};
+	if(par.request == "crtUsr")
+	{
+		response.writeHead(301, {"Content-Type: ": "text/plain"});
+		response.write("<a href='/crtUsr.html?success=true'>User Saved Click Me to Contiune</a>");
 		response.end();
 		
 	};
