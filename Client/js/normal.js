@@ -84,3 +84,22 @@ function usrReq(origin, request, term, callback)
 			}
 		});
 }
+
+function changeUsrInfo(term, value, id, callback)
+{
+	data = $.ajax({
+			url: api,
+			dataType: 'text',
+			method: 'get',
+			crossDomain: true,
+			data: {"request":"changeUsrInfo", "term":term, "value":value, "id":id},
+			success: function(data) {
+			callback(data);
+			},
+			error: function(data) {
+			callback(data);
+				
+				
+			}
+		});
+}

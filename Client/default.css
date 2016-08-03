@@ -5,6 +5,7 @@ body.login {
     border: 3px;
     padding: 10px;
 }
+
 #btnMargin, #btnMargin2{
 	margin-top: 5%;
 }
@@ -15,12 +16,23 @@ body.login {
     text-align: center;
 }
 
+#footer {
+	margin-top: 40%;
+    clear: both;
+    position: relative;
+    z-index: 10;
+    height: 3em;
+    text-align: center;
+    color: grey;
+    font-family: "Lucida Console", Monaco, monospace;
+    font-size: 10px;
+}
+
 #Box{
 	display: block;
 	margin-top:0.5%;
 	margin-bottom: 50px;
 	text-align: center;
-	
 	height: 80px;
 	margin-left: 10%;
 	margin-right: 10%;
@@ -84,8 +96,9 @@ li.nav a:hover{
 
 #header{
 	margin: auto;
-	margin-bottom: 2%;
+	margin-bottom: 1%;
 	width: 95%;
+	font-family: "Lucida Console", Monaco, monospace;
 
 }
 
@@ -96,8 +109,16 @@ li.nav a:hover{
     width: 70%;
 }
 
+.locText{
+	font-family: "Lucida Console", Monaco, monospace;
+}
+
 h2{
 	margin:0px;
+}
+
+h1{
+	margin-bottom: 0px;
 }
 
 a:link{
@@ -129,7 +150,15 @@ float:left;
 
 div.inv-box{
 	margin: 10px;
-	width: 33%;
+	width: 32%;
+	margin-left: 0px;
+	float:left;
+	display: inline;
+}
+
+div.big-box{
+	margin: 10px;
+	width: 80%;
 	margin-left: 0px;
 	float:left;
 	display: inline;
@@ -153,4 +182,8 @@ hr
 .padding{
 	align: right;
 	margin-right: 50px;
+}
+
+.inactive{
+	color: grey;
 }

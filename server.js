@@ -13,7 +13,7 @@ var par;
 var resCode;
 var usrId;
 var usrInfo;
-
+var reqId;
 function encrypt(text, callback){
   var cipher = crypto.createCipher(algorithm,password)
   var crypted = cipher.update(text,'utf8','hex')
@@ -31,10 +31,14 @@ function decrypt(text, callback){
 
 function getPar(request, response, next) //Reads URL parameters to object and saves them to global variable "par"
 {
-
+console.log("=======================================================================")
 	par = request.url.slice(2);
 	par = JSON.parse('{"' + decodeURI(par.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}')
+	console.log("Incoming Request from session "+request.session.data.user +": ")
+	console.log(".")
 	console.log(par);
+	console.log(".")
+	usrId = request.session.data.user;
 	if(par.request == "attention")
 		{
 			setAttention(function(code){
@@ -51,6 +55,14 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 			});
 		}
 
+		if(par.request == "changeUsrInfo")
+		{
+			changeUsrInfo(par.term, par.value,par.id , function(code){
+				resCode = code;
+				console.log(resCode);
+				next();
+			});
+		}
 
 	if(par.origin == "login")
 	{
@@ -67,7 +79,7 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 	{
 		if(par.request == "search")
 		{
-			searchDatabase(par.term, function(result){
+			searchDatabase(par.term, par.value, function(result){
 			});
 		}
 	}
@@ -88,6 +100,7 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 	{
 		if(par.request == "totalUsers")
 		{
+
 			getUsrs(function(allUsers){
 				resCode = allUsers;
 				next();
@@ -132,6 +145,7 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 }
 
 
+
 function getRequest(callback) //Figures out what to do with request data
 {
 	if(par.origin == "login") //If request comes from login page
@@ -145,6 +159,7 @@ function getRequest(callback) //Figures out what to do with request data
 
 function getUsrInfo(callback)
 {
+	console.log(usrId);
 fs.readFile('cred/'+usrId, 'utf8', function (err, data) {
   if (err)
   {
@@ -159,6 +174,71 @@ fs.readFile('cred/'+usrId, 'utf8', function (err, data) {
 });
 }
 
+function changeUsrInfo(term, value, id, callback)
+{
+	getUsrInfo(function(usr){
+		usrId = id;
+		getUsrInfo(function(data){
+		if(usr.info.admin == "true")
+		{
+			console.log(data);
+			if(term == 'admin')
+			{
+				console.log("hoi");
+				data.info.admin = value;
+			}
+			if(term == 'id')
+			{
+				data.cred.id = value;
+				id = value;
+			}
+			if(term == 'email')
+			{
+				data.info.email = value;
+			}
+			if(term == 'gsm')
+			{
+				data.info.gsm = value;
+			}
+			if(term == "attention")
+			{
+				data.info.attention = value;
+			}
+
+			if(term == "attentionResponse")
+			{
+				data.info.attentionResponse = value;
+			}
+			
+
+			if(term == "staff")
+			{
+				data.info.staff = value;
+			}
+
+			if(term == "user")
+			{
+				data.info.user = value;
+			}
+
+			if(term == "operator")
+			{
+				data.info.operator = value;
+			}
+
+			jsonfile.writeFile("cred/"+id, data, function(err){
+				if(err)
+				{
+					callback(403);
+				}
+				else{
+					callback(200);
+				}
+				});
+			}
+	});
+	})
+}
 
 function checkLogin(callback) //Needs somekind of lock function for encryptor but not big deal yet
 {
@@ -166,13 +246,9 @@ fs.readFile('cred/'+par.id, 'utf8', function (err, data) {
   if (err) callback(403);
   if(data != undefined)
   {
-  console.log(data);
   usrInfo = JSON.parse(data);
   encrypt(par.pass, function(usrPass){
-  	console.log(usrPass);
 
-  
-  console.log(usrInfo.cred.pass);
   if(usrPass == usrInfo.cred.pass)
   {
   	callback(200);
@@ -180,6 +256,7 @@ fs.readFile('cred/'+par.id, 'utf8', function (err, data) {
   else
   {
   	callback(403);
+  	console.log(par.id+" had wrong password")
   }
  });
 }
@@ -199,8 +276,9 @@ function toArray(data, callback)
 
 function getUsrs(callback)
 {
+
 	getUsrInfo(function(reqUsr){
-		if(reqUsr.info.admin != undefined)
+		if(reqUsr.info != undefined)
 		{
 		if(reqUsr.info.admin == "true")
 		{
@@ -208,7 +286,6 @@ function getUsrs(callback)
     if (err) {
         throw err;
     }
-    console.log(files);
     callback(files)
 });
 		}
@@ -227,7 +304,6 @@ function crtUsr(callback)
 			encrypt(par.pass, function(pass){
 		if(reqUsr.info.admin == "true")
 		{
-			console.log(par);
 			var usr = {
 				"cred" : {
 					"id": par.id,
@@ -276,6 +352,7 @@ function setAttention(callback)
 		if(code!=403)
 		{
 			usrInfo.info.attention = "true";
+			usrInfo.info.attentionReason = par.comment;
 			jsonfile.writeFile("cred/"+usrInfo.cred.id, usrInfo, function(err){
 					if(err)
 					{
@@ -349,7 +426,6 @@ function responder(request, response, next)
 	}
 	if(par.origin == "usrPage" && par.request == "usrName")
 	{
-		console.log(usrInfo.info.name);
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
 		response.write(usrInfo.info.name);
 		resCode = 200;
@@ -357,7 +433,6 @@ function responder(request, response, next)
 	}
 	if(par.origin == "usrPage" && par.request == "usrInfo")
 	{
-		console.log(usrInfo.info.name);
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
 		response.write(JSON.stringify(usrInfo));
 		resCode = 200;
@@ -367,6 +442,12 @@ function responder(request, response, next)
 	{
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
 		response.write("Attention set");
+		next();
+	}
+	if(resCode == 200 && par.request == "changeUsrInfo")
+	{
+		response.writeHead(200, {"Content-Type: ": "text/plain"});
+		response.write("Info Updated");
 		next();
 	}
 	if(par.origin == "usrPage" && par.request == "getAttention")
@@ -429,4 +510,4 @@ app.use(responder);
 
 
 http.createServer(app).listen(8000);
-console.log("Server is running");
+console.log("Server is running On port 8000");

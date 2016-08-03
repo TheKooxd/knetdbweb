@@ -4,6 +4,7 @@
  	<title> KNET DATABASE LINK </title>
  	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 	<link rel="stylesheet" type="text/css" href="default.css">
+	<link rel="stylesheet" type="text/css" href="links.css">
 	<script src="js/normal.js"></script>
  </head>
  <body>
@@ -14,7 +15,10 @@
 <input type="button" class="btn btn-danger" value="logout" onclick="logout()">
 </div>
  <div id="header">
- <h1>KNET DATABASE</h1>
+ <h1>\\KNET DATABASE></h1>
+
+   <h7 id="path" class="locText"><div class = 'wrapper'><a class = 'cool third after' href='user.html'>\DATABASE</a><a class = 'cool third after' href = 'usrMgmt.html'>\USER_MANAGMENT</a></h7>
+ </div>
  </div>
 <ul class="nav">
  <li class="nav"><a href="user.html">Front Page</a></li>
@@ -70,8 +74,12 @@
 		request("usrPage", "getAttention", function(att){
 				console.log(att);
 				var usrArr = att.split(',');
-				console.log(usrArr);
 				document.getElementById("usrCount2").innerHTML = usrArr.length+" users";
+				if(usrArr[0] == "")
+				{
+					document.getElementById("usrCount2").innerHTML = "0 users";
+				}
+
 			});
 		}
 		getAdmin();

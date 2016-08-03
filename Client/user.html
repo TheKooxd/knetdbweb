@@ -4,6 +4,7 @@
  	<title> KNET DATABASE LINK </title>
  	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 	<link rel="stylesheet" type="text/css" href="default.css">
+	<link rel="stylesheet" type="text/css" href="links.css">
 	<script src="js/normal.js"></script>
  </head>
  <body>
@@ -14,7 +15,9 @@
 <input type="button" class="btn btn-danger" value="logout" onclick="logout()">
 </div>
  <div id="header">
- <h1>KNET DATABASE</h1>
+ <h1>\\KNET DATABASE></h1>
+   <h7 id="path" class="locText"><div class = 'wrapper'><a class = 'cool third after' href='user.html'>\DATABASE</a></h7>
+ </div>
  </div>
  <ul class="nav">
  <li class="nav active"><a href="user.html">Front Page</a></li>
@@ -27,27 +30,77 @@
  <div id="content">
 <h2 id="userWelcome"> Welcome user </h2>
 <hr>
+<div class="big-box" id="response" style="display:none">
+</div>
+<div class="big-box" id="attDiv" style="display:none">
+</div>
  </div>
  </body>
   <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 	<script type="text/javascript">
 	var api = "http://knet.kcorporation.tk/api";
+	var att;
+	var isAdmin = false;
 		function getAdmin(){
 		request("usrPage", "isAdmin", function(admin){
-		console.log(admin);
 			if(admin == "true")
 			{
 			document.getElementById("dash").style = "display:block";
 			document.getElementById("um").style = "display:block";
+			isAdmin = true;
 		}
+		getResponse();
 		});
 		}
 		function getName(){
 		request("usrPage", "usrName", function(name){
-			document.getElementById("userWelcome").innerHTML = "Welcome "+name;
+			document.getElementById("userWelcome").innerHTML = "Welcome "+name.replace(/\+/g, " ") ;
 			getAdmin();
 		});
 		}
+		function getResponse()
+		{
+			request("usrPage", "usrInfo", function(arr){
+				att = JSON.parse(arr);
+			if(isAdmin)
+			{
+			request("usrPage", "getAttention", function(att){
+				var usrArr = att.split(',');
+				console.log(usrArr.length);
+				if(usrArr[0] != "" && usrArr.length != 8)
+				{
+				document.getElementById("attDiv").style = "display:block";
+				document.getElementById("attDiv").innerHTML = "<h3> New Attention Request(s): </h3><hr> Number Of Request to Handle: "+usrArr.length + "<br><br><input id='removeResponse' type='button' class='btn btn-info' value='Goto Attention List' onclick='attList()'>";
+				}
+
+			});
+		
+			}
+				if( att.info.attentionResponse != undefined)
+				{
+					document.getElementById("response").style = "display:inline"
+					document.getElementById("response").innerHTML = "<h3> Admin Response to your attention request: </h3><hr> "+att.info.attentionResponse.replace(/\+/g, " ") + "<br><br><input id='removeResponse' type='button' class='btn btn-info' value='Remove reponse' onclick='removeResponse()'> <input id='answerResponse' type='button' class='btn btn-Primary active' value='Answer reponse' onclick='help()'>";
+				}
+			});
+
+		}
+
+		function removeResponse()
+		{
+			changeUsrInfo("attentionResponse", undefined, att.cred.id, function(status){
+				window.location.reload();
+			});
+		}
+
+		function help()
+		{
+			window.location.href = 'help.html'
+		}
+		function attList()
+		{
+			window.location.href = 'usrAtt.html'
+		}
+
 		getName();
 	</script>
  </html>

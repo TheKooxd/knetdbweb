@@ -4,6 +4,7 @@
  	<title> KNET DATABASE LINK </title>
  	<link rel="stylesheet" href="/lib/bootstrap.css">
 	<link rel="stylesheet" type="text/css" href="default.css">
+		<link rel="stylesheet" type="text/css" href="links.css">
 	<script src="js/normal.js"></script>
 	  <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
 	  <script src="/lib/bootstrap.js"></script>
@@ -16,7 +17,9 @@
 <input type="button" class="btn btn-danger" value="logout" onclick="logout()">
 </div>
  <div id="header">
- <h1>KNET DATABASE</h1>
+ <h1>\\KNET DATABASE></h1>
+
+ <h7 id="path" class="locText">\\DATABASE\\USER_MANAGMENT\USER_OVERVIEW\USER_LIST\USER_INFO</h7>
  </div>
 <ul class="nav">
  <li class="nav"><a href="user.html">Front Page</a></li>
@@ -36,10 +39,10 @@
 <div class="inv-box">
 <h3>General Information</h3>
 <hr>
-Name: <input type="text" > <br><br>
-E-Mail: <input type="text" > <br> <br>
-GSM: <input type="text" > <br> <br>
-<input id="attention" type='button' class='btn btn-primary disabled' value='Needs Attention'>
+ID: <input type="text" disabled="" id="id"> <br><br>
+E-Mail: <input type="text" disabled="" id="email"> <br> <br>
+GSM: <input type="text" disabled="" id="gsm"> <br> <br>
+<input id="generalSaveBtt" type='button' class='btn btn-success' value='Save'  onclick="saveGeneral()">
 </div>
 <div class="inv-box">
 <h3>Medals</h3>
@@ -49,12 +52,30 @@ GSM: <input type="text" > <br> <br>
 <input id="staff" type='button' class='btn btn-info disabled' value='Not Staff' onclick="set('staff')">
 <input id="user" type='button' class='btn btn-Success disabled' value='Not User'>
 </div>
+<div id="attDiv" class="inv-box" style="display:none">
+<h3>Attention notice from user </h3>
+<hr>
+<textarea rows="4" cols="50" id="attentionMsg" disabled="true" value="No attention needed.">
+</textarea>
+<input id="answerAttBtt" type='button' class='btn btn-info' value='Answer the attention' onclick="openAttResponse()">
+<input id="removeAttBtt" type='button' class='btn btn-warning' value='Set As Done' onclick="removeAttForce()">
+<input id="forceRmvBtt" type='button' class='btn btn-danger' style="display:none" value='Remove Any Way' onclick="removeAtt()">
 </div>
- </div>
+<div class="inv-box"></div>
+<div class="inv-box"></div>
+<div id="responseDiv" class="inv-box" style="display:none">
+<h3>Write Response </h3>
+<textarea rows="4" cols="50" id="answerText" form="answerForm">Enter text here...</textarea>
+Keep attention on: <input type="checkbox" id="keepAttention" checked="true"><br>
+<input id="answerAttBtt" type='button' class='btn btn-success' value='Send response' onclick="sendResponse()">
+</div>
+</div>
  </body>
 	<script type="text/javascript">
 	var att;
+	var locPath = "<div class = 'wrapper'><a class = 'cool third after' href='user.html'>\\\DATABASE</a><a class = 'cool third after' href = 'usrMgmt.html'>\\\USER_MANAGMENT</a><a class = 'cool third after' href = 'usrMgmt.html'>\\USER_OVERVIEW</a><a class = 'cool third after' href = 'usrList.html'>\\USER_LIST</a>\\USER_INFO";
 	var request;
+	var adminStatus;
 	var par = window.location.href.slice(41);
 		par = JSON.parse('{"' + decodeURI(par.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}')
 	var api = "http://knet.kcorporation.tk/api";
@@ -62,10 +83,12 @@ GSM: <input type="text" > <br> <br>
 	var usrName;
 		function getAdmin(){
 		request("usrPage", "isAdmin", function(admin){
+			adminStatus = admin;
 			if(admin == "true")
 			{
 			document.getElementById("dash").style = "display:block";
 			document.getElementById("um").style = "display:block";
+			
 		}
 		getAttention();
 		});
@@ -74,31 +97,43 @@ GSM: <input type="text" > <br> <br>
 		{
 			usrReq("usrPage", "usrInfo", par.usrId, function(arr){
 				att = JSON.parse(arr);
-			document.getElementById("userWelcome").innerHTML = "User Information for: "+att.info.name + " ("+att.cred.id+")"; 
-			console.log(att.info.admin);
+			document.getElementById("userWelcome").innerHTML = "User Information for: "+att.info.name.replace("+", " "); + " ("+att.cred.id+")"; 
+			document.getElementById("id").value = att.cred.id;
+			document.getElementById("email").value = att.info.email;
+			document.getElementById("gsm").value = att.info.gsm;
+			document.getElementById("path").innerHTML = locPath + "(" + att.cred.id + ")";
+			if(adminStatus)
+			{
+			document.getElementById("id").disabled = false;
+			document.getElementById("email").disabled = false;
+			document.getElementById("gsm").disabled = false;
+			}
+
 			if(att.info.admin == "true")
 			{
-				console.log("admin")
 				document.getElementById("admin").className = "btn btn-warning active";
 				document.getElementById("admin").value = "ADMIN";
 			}
 			if(att.info.operator == "true")
 			{
-				console.log("admin")
 				document.getElementById("op").className = "btn btn-danger active";
 				document.getElementById("op").value = "OPERATOR";
 			}
 			if(att.info.staff == "true")
 			{
-				console.log("admin")
 				document.getElementById("staff").className = "btn btn-info active";
 				document.getElementById("staff").value = "STAFF";
 			}
 			if(att.info.user == "true")
 			{
-				console.log("admin")
 				document.getElementById("user").className = "btn btn-Success active";
 				document.getElementById("user").value = "USER";
+			}
+			if(att.info.attention == "true")
+			{
+				document.getElementById('attDiv').style = "display:inline";
+				document.getElementById('attentionMsg').disabled = false;
+				document.getElementById('attentionMsg').value = att.info.attentionReason.replace(/\+/g, " ");
 			}
 			});
 		}
@@ -109,41 +144,19 @@ GSM: <input type="text" > <br> <br>
 		function set(type){
 			
 			getState(type, function(state){
-			if(type == "admin")
-			{
-			request = {"origin":"crtUsr", "request":"crtUsr", admin:state, name:att.info.name, id:att.cred.id, pass:att.cred.pass, staff:att.info.staff, op:att.info.operator, email:att.info.email, gsm:att.info.gsm}
-			}
-			if(type == "operator")
-			{
-			request = {"origin":"crtUsr", "request":"crtUsr", operator:state, name:att.info.name, id:att.cred.id, pass:att.cred.pass, staff:att.info.staff, admin:att.info.admin, email:att.info.email, gsm:att.info.gsm}
-			}
-			if(type == "staff")
-			{
-			request = {"origin":"crtUsr", "request":"crtUsr", staff:state, name:att.info.name, id:att.cred.id, pass:att.cred.pass, admin:att.info.admin, op:att.info.operator, email:att.info.email, gsm:att.info.gsm}
-			}
+				console.log(state);
+			changeUsrInfo(type, state, att.cred.id, function(status){
+				window.location.reload();
+			});
 			console.log(state);
-			data = $.ajax({
-			url: api,
-			dataType: 'text',
-			method: 'get',
-			crossDomain: true,
-			data: request,
-			success: function(data) {
-			console.log(data);
-			},
-			error: function(data) {
-			console.log(data);
-				
-				
-			}
-		});
+			
 		});
 		}
 		function getState(type, callback)
 		{
 			if(type == "admin")
 			{
-				if(att.info.admin == true)
+				if(att.info.admin == "true")
 				{
 					callback(false)
 				}
@@ -155,7 +168,7 @@ GSM: <input type="text" > <br> <br>
 
 			if(type == "operator")
 			{
-				if(att.info.operator == true)
+				if(att.info.operator == "true")
 				{
 					callback(false)
 				}
@@ -167,7 +180,7 @@ GSM: <input type="text" > <br> <br>
 
 			if(type == "staff")
 			{
-				if(att.info.staff == true)
+				if(att.info.staff == "true")
 				{
 					callback(false)
 				}
@@ -178,6 +191,50 @@ GSM: <input type="text" > <br> <br>
 			}
 
 		}
+
+		function removeAttForce()
+		{
+			alert("ATTENTION! REMOVING THE NOTICE WITHOUT MESSAGE WILL DELETE THE CASE AND REMOVE THE NOTICE!");
+			document.getElementById("removeAttBtt").disabled = "true";
+			document.getElementById("forceRmvBtt").style = "display:inline";
+		}
+
+		function removeAtt()
+		{
+			changeUsrInfo("attention", "false", att.cred.id, function(status){
+				window.location.reload();
+			});
+		}
+
+		function openAttResponse()
+		{
+			document.getElementById("responseDiv").style = "display:inline";
+		}
+
+		function sendResponse()
+		{
+			changeUsrInfo("attentionResponse", document.getElementById('answerText').value, att.cred.id, function(status){
+				if(!document.getElementById("keepAttention").checked)
+				{
+					changeUsrInfo("attention", "false", att.cred.id, function(status){
+
+						});
+				}
+				window.location.reload();
+			});
+		}
+
+		function saveGeneral()
+		{
+			changeUsrInfo("id", document.getElementById('id').value, att.cred.id, function(status){
+					changeUsrInfo("email", document.getElementById("email").value, att.cred.id, function(status){
+						changeUsrInfo("gsm", document.getElementById("gsm").value, att.cred.id, function(status){
+						window.location.reload();
+						});
+						});
+						});
+		}
+
 		getAdmin();
 	</script>
  </html>
