@@ -1,0 +1,38 @@
+ <!DOCTYPE html>
+ <html>
+ <head>
+ 	<title> KNET DATABASE LINK </title>
+ 	<link rel="stylesheet" href="../lib/bootstrap.css">
+ 	<script src="../js/normal.js"></script>
+ </head>
+ <body id="hide">
+ <div id="content">
+ 	<input type="hidden" name="request" value="attention"><br>
+ 	<textarea rows="4" cols="50" id="comment" name="comment">Enter text here...</textarea><br>
+ 	<input type="button" class="btn btn-info" value="Set help request" onclick="getSomeHelp()">
+ </div>
+</body>
+<script src="/lib/jquery/dist/jquery.js"></script>
+<script type="text/javascript">
+	var api = "http://knet.kcorporation.tk/api";
+	function getAdmin(){
+		request("usrPage", "isAdmin", function(admin){
+			console.log(admin);
+			if(admin == "true")
+			{
+				document.getElementById("dash").style = "display:block";
+				document.getElementById("um").style = "display:block";
+			}
+		});
+	}
+
+	function getSomeHelp() {
+		console.log(JSON.stringify(document.getElementById("comment").value));
+		setAttention("help", "attention", JSON.stringify(document.getElementById("comment").value).replace(/"/g, ""), function(response){
+		document.getElementById("hide").style= "display:none";
+		});
+	}
+
+	getAdmin();
+</script>
+</html>

@@ -25,18 +25,15 @@
  	<li class="nav"><a href="database.html">Database</a></li>
  	<li class="nav "><a href="usr.html">User Info</a></li>
  	<li class="nav" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
-
  	<li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
  </ul>
  <div id="content">
  	<h2 id="userWelcome"> HELP </h2>
  	<hr>
  	To get admin help fill in the form and click this button: 
- 	<form method="GET" action="/api" id="helpForm">
- 		<input type="hidden" name="request" value="attention">
- 		<textarea rows="4" cols="50" name="comment" form="helpForm">Enter text here...</textarea><br>
- 		<input type="submit" class="btn btn-info" value="Set help request">
- 	</form>
+ 	<input type="hidden" name="request" value="attention"><br>
+ 	<textarea rows="4" cols="50" id="comment" name="comment">Enter text here...</textarea><br>
+ 	<input type="button" class="btn btn-info" value="Set help request" onclick="getSomeHelp()">
  </div>
 </body>
 <script src="/lib/jquery/dist/jquery.js"></script>
@@ -50,6 +47,13 @@
 				document.getElementById("dash").style = "display:block";
 				document.getElementById("um").style = "display:block";
 			}
+		});
+	}
+
+	function getSomeHelp() {
+		console.log(JSON.stringify(document.getElementById("comment").value));
+		setAttention("help", "attention", JSON.stringify(document.getElementById("comment").value).replace(/"/g, ""), function(response){
+			console.log(response);
 		});
 	}
 
