@@ -2,56 +2,57 @@
  <html>
  <head>
  	<title> KNET DATABASE LINK </title>
- 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-	<link rel="stylesheet" type="text/css" href="default.css">
-	<link rel="stylesheet" type="text/css" href="links.css">
-	<script src="js/normal.js"></script>
+ 	<link rel="stylesheet" href="/lib/bootstrap.css">
+ 	<link rel="stylesheet" type="text/css" href="default.css">
+ 	<link rel="stylesheet" type="text/css" href="links.css">
+ 	<script src="js/normal.js"></script>
  </head>
  <body>
- <div id="controls">
- <button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
-  <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
-</button>
-<input type="button" class="btn btn-danger" value="logout" onclick="logout()">
-</div>
- <div id="header">
- <h1>\\KNET DATABASE></h1>
+ 	<div id="controls">
+ 		<button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
+ 			<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+ 		</button>
+ 		<input type="button" class="btn btn-danger" value="logout" onclick="logout()">
+ 	</div>
+ 	<div id="header">
+ 		<h1>\\KNET DATABASE></h1>
 
- <h7 id="path" class="locText"><div class = 'wrapper'><a class = 'cool third after' href='user.html'>\DATABASE</a><a class = 'cool third after' href = 'help.html'>\HELP</a></h7>
+ 		<h7 id="path" class="locText"><div class = 'wrapper'><a class = 'cool third after' href='user.html'>\DATABASE</a><a class = 'cool third after' href = 'help.html'>\HELP</a></h7>
+ 	</div>
  </div>
  <ul class="nav">
- <li class="nav"><a href="user.html">Front Page</a></li>
- <li class="nav"><a href="database.html">Database</a></li>
- <li class="nav "><a href="usr.html">User Info</a></li>
- <li class="nav" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
+ 	<li class="nav"><a href="user.html">Front Page</a></li>
+ 	<li class="nav"><a href="database.html">Database</a></li>
+ 	<li class="nav "><a href="usr.html">User Info</a></li>
+ 	<li class="nav" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
 
- <li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
+ 	<li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
  </ul>
  <div id="content">
-<h2 id="userWelcome"> HELP </h2>
-<hr>
-To get admin help fill in the form and click this button: 
-<form method="GET" action="/api" id="helpForm">
-<input type="hidden" name="request" value="attention">
-<textarea rows="4" cols="50" name="comment" form="helpForm">Enter text here...</textarea><br>
-<input type="submit" class="btn btn-info" value="Set help request">
-</form>
+ 	<h2 id="userWelcome"> HELP </h2>
+ 	<hr>
+ 	To get admin help fill in the form and click this button: 
+ 	<form method="GET" action="/api" id="helpForm">
+ 		<input type="hidden" name="request" value="attention">
+ 		<textarea rows="4" cols="50" name="comment" form="helpForm">Enter text here...</textarea><br>
+ 		<input type="submit" class="btn btn-info" value="Set help request">
+ 	</form>
  </div>
- </body>
-  <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-	<script type="text/javascript">
+</body>
+<script src="/lib/jquery/dist/jquery.js"></script>
+<script type="text/javascript">
 	var api = "http://knet.kcorporation.tk/api";
-		function getAdmin(){
+	function getAdmin(){
 		request("usrPage", "isAdmin", function(admin){
-		console.log(admin);
+			console.log(admin);
 			if(admin == "true")
 			{
-			document.getElementById("dash").style = "display:block";
-			document.getElementById("um").style = "display:block";
-		}
+				document.getElementById("dash").style = "display:block";
+				document.getElementById("um").style = "display:block";
+			}
 		});
-		}
-	
-		getAdmin();
-	</script>
- </html>
+	}
+
+	getAdmin();
+</script>
+</html>

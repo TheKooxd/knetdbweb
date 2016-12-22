@@ -2,8 +2,7 @@
  <html>
  <head>
  	<title> KNET DATABASE LINK </title>
- 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-	<link rel="stylesheet" type="text/css" href="default.css">
+<link rel="stylesheet" href="/lib/bootstrap.css">	<link rel="stylesheet" type="text/css" href="default.css">
 	<link rel="stylesheet" type="text/css" href="links.css">
 	<script src="js/normal.js"></script>
  </head>
@@ -28,6 +27,7 @@
  <li class="nav active"><a href="usrMgmt.html">User Overview</a></li>
  <li class="nav"><a href="searchUsr.html">Search Users</a></li>
   <li class="nav"><a href="crtUsr.html">Create Users</a></li>
+     <li class="nav"><a href="grpMgmt.html">Group Managment</a></li>
  </ul>
  <li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
  </ul>
@@ -41,7 +41,7 @@
 </div>
  </div>
  </body>
-  <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="/lib/jquery/dist/jquery.js"></script>
 	<script type="text/javascript">
 	var api = "http://knet.kcorporation.tk/api";
 		var write = "<tr id='usrTr'><th>ID</th><th>Name</th><th>Creation date</th><th>Admin</th></tr>";
@@ -64,7 +64,7 @@
 			usrArr.forEach(function(usr, index){
 			usrReq("usrPage", "usrInfo", usr, function(att){
 				att = JSON.parse(att);
-				write = write + "<tr id='usrTr'><td><a href='usrInfo.html?usrId="+att.cred.id+"'>"+ att.cred.id +"</a></td></a><td>"+ att.info.name +"</td><td>n/a</td><td>"+att.info.admin+"</td></tr>"
+				write = write + "<tr id='usrTr'><td><a href='usrInfo.html?usrId="+att.cred.id+"'>"+ att.cred.id +"</a></td></a><td>"+ att.info.name.replace("+", " "); +"</td><td>n/a</td><td>"+att.info.admin+"</td></tr>"
 				if(index == 0)
 				{
 					render();

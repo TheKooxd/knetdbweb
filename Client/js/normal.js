@@ -66,7 +66,7 @@ function dbReq(origin, request, term, callback)
 		});
 }
 
-function usrReq(origin, request, term, callback)
+                    function usrReq(origin, request, term, callback)
 {
 	data = $.ajax({
 			url: api,
@@ -74,6 +74,25 @@ function usrReq(origin, request, term, callback)
 			method: 'get',
 			crossDomain: true,
 			data: {"origin":origin, "request":request, "usrId":term},
+			success: function(data) {
+			callback(data);
+			},
+			error: function(data) {
+			callback(data);
+				
+				
+			}
+		})
+}
+
+function grpReq(origin, request, term, callback)
+{
+	data = $.ajax({
+			url: api,
+			dataType: 'text',
+			method: 'get',
+			crossDomain: true,
+			data: {"origin":origin, "request":request, "id":term},
 			success: function(data) {
 			callback(data);
 			},

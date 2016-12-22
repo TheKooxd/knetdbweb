@@ -6,7 +6,7 @@
 	<link rel="stylesheet" type="text/css" href="default.css">
 		<link rel="stylesheet" type="text/css" href="links.css">
 	<script src="js/normal.js"></script>
-	  <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+	  <script src="/lib/jquery/dist/jquery.js"></script>
 	  <script src="/lib/bootstrap.js"></script>
  </head>
  <body>
@@ -30,6 +30,7 @@
  <li class="nav active"><a href="usrMgmt.html">User Overview</a></li>
  <li class="nav"><a href="searchUsr.html">Search Users</a></li>
   <li class="nav"><a href="crtUsr.html">Create Users</a></li>
+   <li class="nav"><a href="grpMgmt.html">Group Managment</a></li>
  </ul>
  <li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
  </ul>
@@ -42,6 +43,10 @@
 ID: <input type="text" disabled="" id="id"> <br><br>
 E-Mail: <input type="text" disabled="" id="email"> <br> <br>
 GSM: <input type="text" disabled="" id="gsm"> <br> <br>
+Group: <select id="group">
+
+</select>
+<br><br>
 <input id="generalSaveBtt" type='button' class='btn btn-success' value='Save'  onclick="saveGeneral()">
 </div>
 <div class="inv-box">
@@ -75,6 +80,7 @@ Keep attention on: <input type="checkbox" id="keepAttention" checked="true"><br>
 	var att;
 	var locPath = "<div class = 'wrapper'><a class = 'cool third after' href='user.html'>\\\DATABASE</a><a class = 'cool third after' href = 'usrMgmt.html'>\\\USER_MANAGMENT</a><a class = 'cool third after' href = 'usrMgmt.html'>\\USER_OVERVIEW</a><a class = 'cool third after' href = 'usrList.html'>\\USER_LIST</a>\\USER_INFO";
 	var request;
+	var write;
 	var adminStatus;
 	var par = window.location.href.slice(41);
 		par = JSON.parse('{"' + decodeURI(par.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}')
@@ -96,12 +102,14 @@ Keep attention on: <input type="checkbox" id="keepAttention" checked="true"><br>
 		function getAttention()
 		{
 			usrReq("usrPage", "usrInfo", par.usrId, function(arr){
+
 				att = JSON.parse(arr);
 			document.getElementById("userWelcome").innerHTML = "User Information for: "+att.info.name.replace("+", " "); + " ("+att.cred.id+")"; 
 			document.getElementById("id").value = att.cred.id;
 			document.getElementById("email").value = att.info.email;
 			document.getElementById("gsm").value = att.info.gsm;
 			document.getElementById("path").innerHTML = locPath + "(" + att.cred.id + ")";
+			console.log("usr");
 			if(adminStatus)
 			{
 			document.getElementById("id").disabled = false;
@@ -135,10 +143,45 @@ Keep attention on: <input type="checkbox" id="keepAttention" checked="true"><br>
 				document.getElementById('attentionMsg').disabled = false;
 				document.getElementById('attentionMsg').value = att.info.attentionReason.replace(/\+/g, " ");
 			}
+			getGroup();
 			});
 		}
-		function render(){
-			document.getElementById("usrTbl").innerHTML = write;
+		
+		function getGroup()
+		{
+			request("grpMgr", "totalGroups", function(grp){
+			var grpArr = grp.split(',');
+			console.log(grpArr);
+			var index = grpArr.length;
+			grpArr.forEach(function(grp){
+			grpReq("grpMgr", "grpInfo", grp, function(grpInfo){
+				grpInfo = JSON.parse(grpInfo);
+				if(att.info.group == grpInfo.info.name)
+				{
+					write = write + "<option selected='selected' value='"+grpInfo.info.name+"'>"+grpInfo.info.name+"</option>"
+
+				}
+				else
+				{
+					write = write + "<option value='"+grpInfo.info.name+"'>"+grpInfo.info.name+"</option>"
+				}
+				index--;
+				if(index == 0)
+				{
+					if(att.info.group == undefined || att.info.group == "na")
+					{
+						write = write + "<option selected='selected' value='na'>No Group Assigned</option>"
+					}
+					render();
+				}
+				});
+			});
+			});
+		}
+
+		function render()
+		{
+			document.getElementById("group").innerHTML = write;
 		}
 
 		function set(type){
@@ -229,7 +272,9 @@ Keep attention on: <input type="checkbox" id="keepAttention" checked="true"><br>
 			changeUsrInfo("id", document.getElementById('id').value, att.cred.id, function(status){
 					changeUsrInfo("email", document.getElementById("email").value, att.cred.id, function(status){
 						changeUsrInfo("gsm", document.getElementById("gsm").value, att.cred.id, function(status){
+							changeUsrInfo("group", document.getElementById("group").value, att.cred.id, function(status){
 						window.location.reload();
+						});
 						});
 						});
 						});

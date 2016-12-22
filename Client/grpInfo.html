@@ -1,0 +1,228 @@
+ <!DOCTYPE html>
+ <html>
+ <head>
+ 	<title> KNET DATABASE LINK </title>
+ 	<link rel="stylesheet" href="/lib/bootstrap.css">
+	<link rel="stylesheet" type="text/css" href="default.css">
+		<link rel="stylesheet" type="text/css" href="links.css">
+	<script src="js/normal.js"></script>
+	  <script src="/lib/jquery/dist/jquery.js"></script>
+	  <script src="/lib/bootstrap.js"></script>
+ </head>
+ <body>
+ <div id="controls">
+  <button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
+  <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+</button>
+<input type="button" class="btn btn-danger" value="logout" onclick="logout()">
+</div>
+ <div id="header">
+ <h1>\\KNET DATABASE></h1>
+
+ <h7 id="path" class="locText">\\DATABASE\\USER_MANAGMENT\USER_OVERVIEW\USER_LIST\USER_INFO</h7>
+ </div>
+<ul class="nav">
+ <li class="nav"><a href="user.html">Front Page</a></li>
+ <li class="nav"><a href="database.html">Database</a></li>
+ <li class="nav "><a href="usr.html">User Info</a></li>
+ <li class="nav active" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
+  <ul class="">
+ <li class="nav"><a href="usrMgmt.html">User Overview</a></li>
+ <li class="nav"><a href="searchUsr.html">Search Users</a></li>
+  <li class="nav"><a href="crtUsr.html">Create Users</a></li>
+   <li class="nav active"><a href="grpMgmt.html">Group Managment</a></li>
+       <ul class="">
+     <li class="nav active"><a href="grpMgmt.html">Group List</a></li>
+      <li class="nav"><a href="crtGrp.html">Create Croup</a></li>
+    </ul>
+ </ul>
+ <li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
+ </ul>
+ <div id="content">
+<h2 id="userWelcome"> Crunching Data </h2>
+<hr>
+<div class="inv-box">
+<h3>General Information</h3>
+<hr>
+ID: <input type="text" disabled="" id="id"> <br><br>
+Location: <input type="text" disabled="" id="location"> <br> <br>
+Leader: <input type="text" disabled="" id="leader"> <br> <br>
+GSM: <input type="text" disabled="" id="gsm"> <br> <br>
+<br>
+<input id="generalSaveBtt" type='button' class='btn btn-success' value='Save'  onclick="saveGeneral()">
+</div>
+<div class="inv-box">
+<h3>Members</h3>
+<hr>
+<table class='table table-striped' id="memberTbl">
+</table>
+</div>
+<div id="attDiv" class="inv-box" style="display:none">
+<h3>Attention notice from user </h3>
+<hr>
+<textarea rows="4" cols="50" id="attentionMsg" disabled="true" value="No attention needed.">
+</textarea>
+<input id="answerAttBtt" type='button' class='btn btn-info' value='Answer the attention' onclick="openAttResponse()">
+<input id="removeAttBtt" type='button' class='btn btn-warning' value='Set As Done' onclick="removeAttForce()">
+<input id="forceRmvBtt" type='button' class='btn btn-danger' style="display:none" value='Remove Any Way' onclick="removeAtt()">
+</div>
+<div class="inv-box"></div>
+<div class="inv-box"></div>
+<div id="responseDiv" class="inv-box" style="display:none">
+<h3>Write Response </h3>
+<textarea rows="4" cols="50" id="answerText" form="answerForm">Enter text here...</textarea>
+Keep attention on: <input type="checkbox" id="keepAttention" checked="true"><br>
+<input id="answerAttBtt" type='button' class='btn btn-success' value='Send response' onclick="sendResponse()">
+</div>
+</div>
+ </body>
+	<script type="text/javascript">
+	var att;
+	var locPath = "<div class = 'wrapper'><a class = 'cool third after' href='user.html'>\\\DATABASE</a><a class = 'cool third after' href = 'usrMgmt.html'>\\\USER_MANAGMENT</a><a class = 'cool third after' href = 'usrMgmt.html'>\\USER_OVERVIEW</a><a class = 'cool third after' href = 'usrList.html'>\\USER_LIST</a>\\USER_INFO";
+	var request;
+	var write;
+	var adminStatus;
+	var usr;
+	var par = window.location.href.slice(41);
+		par = JSON.parse('{"' + decodeURI(par.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}')
+	var api = "http://knet.kcorporation.tk/api";
+		var write = "<tr id='usrTr'><th>ID</th><th>Name</th><th>Creation date</th></tr>";
+	var usrName;
+		function getAdmin(){
+		request("usrPage", "isAdmin", function(admin){
+			adminStatus = admin;
+			if(admin == "true")
+			{
+			document.getElementById("dash").style = "display:block";
+			document.getElementById("um").style = "display:block";
+			
+		}
+		getAttention();
+		});
+		}
+		function getAttention()
+		{
+			grpReq("grpMgr", "grpInfo", par.grpId, function(arr){
+				request("usrPage", "usrInfo", function(usrCall){
+				att = JSON.parse(arr);
+				usr = JSON.parse(usrCall);
+			document.getElementById("userWelcome").innerHTML = "Group Information for: "+att.info.name.replace("+", " ");
+			document.getElementById("id").value = att.info.id;
+			document.getElementById("location").value = att.info.location.replace(/%2F/g, '/');
+			document.getElementById("gsm").value = att.info.gsm;
+			document.getElementById("leader").value = att.info.leader;
+			console.log("usr");
+			if(usr.cred.id == att.info.leader)
+			{
+			document.getElementById("id").disabled = false;
+			document.getElementById("gsm").disabled = false;
+			document.getElementById("leader").disabled = false;
+			document.getElementById("location").disabled = false;
+			}
+
+			if(att.info.admin == "true")
+			{
+				document.getElementById("admin").className = "btn btn-warning active";
+				document.getElementById("admin").value = "ADMIN";
+			}
+			if(att.info.operator == "true")
+			{
+				document.getElementById("op").className = "btn btn-danger active";
+				document.getElementById("op").value = "OPERATOR";
+			}
+			if(att.info.staff == "true")
+			{
+				document.getElementById("staff").className = "btn btn-info active";
+				document.getElementById("staff").value = "STAFF";
+			}
+			if(att.info.user == "true")
+			{
+				document.getElementById("user").className = "btn btn-Success active";
+				document.getElementById("user").value = "USER";
+			}
+			if(att.info.attention == "true")
+			{
+				document.getElementById('attDiv').style = "display:inline";
+				document.getElementById('attentionMsg').disabled = false;
+				document.getElementById('attentionMsg').value = att.info.attentionReason.replace(/\+/g, " ");
+			}
+			getMembers();
+			});
+				});
+			
+		}
+		function getMembers()
+		{
+		request("usrMgr", "totalUsers", function(usrArr){
+			var usrArr = usrArr.split(',');
+			var index = usrArr.length;
+			usrArr.forEach(function(usr){
+			usrReq("usrPage", "usrInfo", usr, function(usrInfo){
+				usrInfo = JSON.parse(usrInfo);
+				if(usrInfo.info.group == att.info.name)
+				{
+				write = write + "<tr id='grpTr'><td><a href='usrInfo.html?usrId="+usrInfo.cred.id+"'>"+ usrInfo.cred.id +"</a></td></a><td>"+ usrInfo.info.name.replace('+', ' ') +"</td><td>n/a</td></tr>"
+				}
+				index--;
+				if(index == 0)
+				{
+					render();
+				}
+			});
+			});
+			});
+		}
+
+		function render()
+		{
+			document.getElementById("memberTbl").innerHTML = write;
+		}
+
+		function removeAttForce()
+		{
+			alert("ATTENTION! REMOVING THE NOTICE WITHOUT MESSAGE WILL DELETE THE CASE AND REMOVE THE NOTICE!");
+			document.getElementById("removeAttBtt").disabled = "true";
+			document.getElementById("forceRmvBtt").style = "display:inline";
+		}
+
+		function removeAtt()
+		{
+			changeUsrInfo("attention", "false", att.cred.id, function(status){
+				window.location.reload();
+			});
+		}
+
+		function openAttResponse()
+		{
+			document.getElementById("responseDiv").style = "display:inline";
+		}
+
+		function sendResponse()
+		{
+			changeUsrInfo("attentionResponse", document.getElementById('answerText').value, att.cred.id, function(status){
+				if(!document.getElementById("keepAttention").checked)
+				{
+					changeUsrInfo("attention", "false", att.cred.id, function(status){
+
+						});
+				}
+				window.location.reload();
+			});
+		}
+
+		function saveGeneral()
+		{
+			changeUsrInfo("id", document.getElementById('id').value, att.cred.id, function(status){
+					changeUsrInfo("email", document.getElementById("email").value, att.cred.id, function(status){
+						changeUsrInfo("gsm", document.getElementById("gsm").value, att.cred.id, function(status){
+							changeUsrInfo("group", document.getElementById("group").value, att.cred.id, function(status){
+						window.location.reload();
+						});
+						});
+						});
+						});
+		}
+
+		getAdmin();
+	</script>
+ </html>

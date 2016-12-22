@@ -13,6 +13,7 @@ var par;
 var resCode;
 var usrId;
 var usrInfo;
+var grpInfo;
 var reqId;
 function encrypt(text, callback){
   var cipher = crypto.createCipher(algorithm,password)
@@ -64,6 +65,14 @@ console.log("===================================================================
 			});
 		}
 
+		if(par.origin == "crtGrp" && par.request == "crtGrp")
+		{
+			crtGrp(function(code){
+				resCode = code;
+				next();
+			});
+		}
+
 	if(par.origin == "login")
 	{
 
@@ -106,6 +115,27 @@ console.log("===================================================================
 				next();
 			});
 		}
+	}
+
+	if(par.origin == "grpMgr")
+	{
+		if(par.request == "totalGroups")
+		{
+
+			getGrp(function(allGrp){
+				resCode = allGrp;
+				next();
+			});
+		}
+	}
+
+	if(par.request == "grpInfo")
+	{
+		getGrpInfo(function(callback){
+			grpInfo = callback;
+			resCode = 200;
+			next();
+			});
 	}
 
 	if(par.origin == "usrPage")
@@ -159,7 +189,7 @@ function getRequest(callback) //Figures out what to do with request data
 
 function getUsrInfo(callback)
 {
-	console.log(usrId);
+
 fs.readFile('cred/'+usrId, 'utf8', function (err, data) {
   if (err)
   {
@@ -170,6 +200,24 @@ fs.readFile('cred/'+usrId, 'utf8', function (err, data) {
 
   	  usrInfo = JSON.parse(data);
   	callback(usrInfo);
+}
+});
+}
+
+function getGrpInfo(callback)
+{
+		console.log("GRP");
+fs.readFile('grp/'+par.id, 'utf8', function (err, data) {
+  if (err)
+  {
+  	  	console.log(err);
+  	callback(403);
+  }
+  if(data != undefined)
+  {
+
+  	  grpInfo = JSON.parse(data);
+  	callback(grpInfo);
 }
 });
 }
@@ -191,6 +239,10 @@ function changeUsrInfo(term, value, id, callback)
 			{
 				data.cred.id = value;
 				id = value;
+			}
+			if(term == 'group')
+			{
+				data.info.group = value;
 			}
 			if(term == 'email')
 			{
@@ -297,6 +349,29 @@ function getUsrs(callback)
 	});
 }
 
+function getGrp(callback)
+{
+
+	getUsrInfo(function(reqUsr){
+		if(reqUsr.info != undefined)
+		{
+		if(reqUsr.info.admin == "true")
+		{
+		fs.readdir("grp/", function (err, files) {
+    if (err) {
+        throw err;
+    }
+    callback(files)
+});
+		}
+		else
+		{
+			callback(403);
+		}
+	}
+	});
+}
+
 function crtUsr(callback)
 {
 			
@@ -343,6 +418,42 @@ function crtUsr(callback)
 			callback(403);
 		}
 		});
+});
+	}
+
+	function crtGrp(callback)
+{
+		getUsrInfo(function(reqUsr){
+			getGrp(function(id){
+		if(reqUsr.info.admin == "true")
+		{
+			id.length++;
+			var grp = {
+				"info" : {
+					"name": par.name,
+					"location": par.location,
+					"leader": par.leader,
+					"gsm": par.gsm,
+					"id": id.length
+				}
+			};
+			id.length++;
+				jsonfile.writeFile("grp/"+id.length, grp, function(err){
+					if(err)
+					{
+						console.log(err);
+					}
+					else{
+						callback(200);
+					}
+				});
+			
+		}
+		else
+		{
+			callback(403);
+		}
+});
 });
 	}
 
@@ -438,6 +549,13 @@ function responder(request, response, next)
 		resCode = 200;
 		next();
 	}
+	if(par.request == "grpInfo")
+	{
+		response.writeHead(200, {"Content-Type: ": "text/plain"});
+		response.write(JSON.stringify(grpInfo));
+		resCode = 200;
+		next();
+	}
 	if(par.origin == "usrPage" && resCode == 200 && par.request == "attention")
 	{
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
@@ -471,6 +589,13 @@ function responder(request, response, next)
 		resCode = 200;
 		next();
 	}
+	if(par.origin == "grpMgr" && par.request == "totalGroups")
+	{
+		response.writeHead(200, {"Content-Type: ": "text/plain"});
+		response.write(resCode.toString());
+		resCode = 200;
+		next();
+	}
 	if(par.origin == "login" && resCode == 200)
 	{
 		console.log("GIVING SESSION COOKIE");
@@ -484,6 +609,13 @@ function responder(request, response, next)
 	{
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
 		response.write(request.session);
+		response.end();
+		
+	};
+	if(par.request == "crtGrp")
+	{
+		response.writeHead(301, {"Content-Type: ": "text/plain"});
+		response.write("<a href='/grpUsr.html?success=true'>Group Saved Click Me to Contiune</a>");
 		response.end();
 		
 	};

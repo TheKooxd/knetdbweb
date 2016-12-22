@@ -1,0 +1,82 @@
+ <!DOCTYPE html>
+ <html>
+ <head>
+ 	<title> KNET DATABASE LINK </title>
+<link rel="stylesheet" href="/lib/bootstrap.css">
+	<link rel="stylesheet" type="text/css" href="default.css">
+	<link rel="stylesheet" type="text/css" href="links.css">
+	<script src="js/normal.js"></script>
+ </head>
+ <body>
+ <div id="controls">
+  <button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
+  <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+</button>
+<input type="button" class="btn btn-danger" value="logout" onclick="logout()">
+</div>
+ <div id="header">
+ <h1>\\KNET DATABASE></h1>
+
+   <h7 id="path" class="locText"><div class = 'wrapper'><a class = 'cool third after' href='user.html'>\DATABASE</a><a class = 'cool third after' href = 'usrMgmt.html'>\DATABASE_LINK</a></h7>
+ </div>
+ </div>
+ <ul class="nav">
+ <li class="nav"><a href="user.html">Front Page</a></li>
+ <li class="nav"><a href="database.html">Database</a></li>
+ <li class="nav disabled"><a href="usr.html">User Search</a></li>
+ <li class="nav active" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
+  <ul class="">
+ <li class="nav"><a href="usrMgmnt.html">User Overview</a></li>
+ <li class="nav active"><a href="searchUsr.html">Search Users</a></li>
+  <li class="nav"><a href="crtUsr.html">Create Users</a></li>
+     <li class="nav"><a href="grpMgmt.html">Group Managment</a></li>
+ </ul>
+ <li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
+ </ul>
+ <div id="content">
+<h2 id="userWelcome">User Search Tool</h2>
+<hr>
+<div id="container">
+<input type="text" id="sq">
+<br>
+<br>
+<input type="button" class="btn btn-info" value="Search" onclick="search()">
+</div>
+ </div>
+ </body>
+<script src="/lib/jquery/dist/jquery.js"></script>
+	<script type="text/javascript">
+	var api = "http://knet.kcorporation.tk/api";
+		function getAdmin(){
+		request("usrPage", "isAdmin", function(admin){
+		console.log(admin);
+			if(admin == "true")
+			{
+			document.getElementById("dash").style = "display:block";
+			document.getElementById("um").style = "display:block";
+		}
+		});
+		}
+		getAdmin();
+		function search(){
+			var searchTerm = document.getElementById("sq").value;
+			request("usrMgr", "totalUsers", function(users){
+				users = users.split(',');
+				users.forEach(function(usr){
+					usrReq("usrPage", "usrInfo", usr, function(att){
+						att = JSON.parse(att);
+						att.info.name = att.info.name.replace('+', ' ')
+						if(usr == searchTerm || att.info.email == searchTerm || att.info.gsm == searchTerm)
+						{
+							window.location.href = 'usrInfo.html?id=' + att.cred.id;
+						}
+						if(att.info.name == searchTerm )
+						{
+							window.location.href = 'usrInfo.html?id=' + att.cred.id;
+						}
+					});
+				});
+			});
+		}
+	</script>
+ </html>
