@@ -2,104 +2,111 @@
  <html>
  <head>
  	<title> KNET DATABASE LINK </title>
-<link rel="stylesheet" href="/lib/bootstrap.css">
-	<link rel="stylesheet" type="text/css" href="default.css">
-	<link rel="stylesheet" type="text/css" href="links.css">
-	<script src="js/normal.js"></script>
+ 	<link rel="stylesheet" href="/lib/bootstrap.css">
+ 	<link rel="stylesheet" type="text/css" href="default.css">
+ 	<link rel="stylesheet" type="text/css" href="links.css">
+ 	<script src="js/normal.js"></script>
  </head>
  <body>
- <div id="controls">
-  <button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
-  <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
-</button>
-<input type="button" class="btn btn-danger" value="logout" onclick="logout()">
-</div>
- <div id="header">
- <h1>\\KNET DATABASE></h1>
+ 	<div id="controls">
+ 		<button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
+ 			<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+ 		</button>
+ 		<input type="button" class="btn btn-danger" value="logout" onclick="logout()">
+ 	</div>
+ 	<div id="header">
+ 		<h1>\\KNET DATABASE></h1>
 
-   <h7 id="path" class="locText"><div class = 'wrapper'><a class = 'cool third after' href='user.html'>\DATABASE</a><a class = 'cool third after' href = 'usrMgmt.html'>\USER_MANAGMENT</a><a class = 'cool third after' href = 'usrMgmt.html'>\CRT_USR</a></h7>
- </div>
+ 		<h7 id="path" class="locText"><div class = 'wrapper'><a class = 'cool third after' href='user.html'>\DATABASE</a><a class = 'cool third after' href = 'usrMgmt.html'>\USER_MANAGMENT</a><a class = 'cool third after' href = 'usrMgmt.html'>\CRT_USR</a></h7>
+ 	</div>
  </div>
  <ul class="nav">
- <li class="nav"><a href="user.html">Front Page</a></li>
- <li class="nav"><a href="database.html">Database</a></li>
- <li class="nav"><a href="usr.html">User Info</a></li>
- <li class="nav active" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
-  <ul class="">
- <li class="nav"><a href="usrMgmt.html">User Overview</a></li>
- <li class="nav"><a href="searchUsr.html">Search Users</a></li>
-  <li class="nav active"><a href=".html">Create Users</a></li>
+ 	<li class="nav"><a href="user.html">Front Page</a></li>
+ 	<li class="nav"><a href="database.html">Database</a></li>
+ 	<li class="nav "><a href="usr.html">User Info</a></li>
+ 	<li class="nav active" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
+ 	<ul class="">
+ 		<li class="nav"><a href="usrMgmt.html">User Overview</a></li>
+ 		<li class="nav"><a href="searchUsr.html">Search Users</a></li>
+ 		<li class="nav"><a href="crtUsr.html">Create Users</a></li>
+ 		<li class="nav"><a href="grpMgmt.html">Group Managment</a></li>
+ 		<ul class="">
+ 			<li class="nav"><a href="grpMgmt.html">Group List</a></li>
+ 			<li class="nav active"><a href="crtGrp.html">Create Croup</a></li>
+ 		</ul>
+ 	</ul>
+ 	<li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
  </ul>
  <li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
- </ul>
- <div id="content">
- <div id="Box" class "null" style="display:none">
- </div>
-<h2 id="userWelcome"> Group Creator </h2>
-<hr>
-<div class="inv-box">
-<h3>Please input to every form.</h3>
-<div class="clearfix"></div>
-<form method="GET" action="/api" id="grpForm">
-<input type="hidden" name="origin" value="crtGrp">
-<input type="hidden" name="request" value="crtGrp">
-Goup Name: <input class="padding" type="text" name="name"><p><p>
-Leader: <select id="leader" form="grpForm" name="leader">
-</select><p>
-Location: <input class="padding" type="text" name="location"><p>
-GSM: <input class="padding" type="text" name="gsm"><p>
+</ul>
+<div id="content">
+	<div id="Box" class "null" style="display:none">
+	</div>
+	<h2 id="userWelcome"> Group Creator </h2>
+	<hr>
+	<div class="inv-box">
+		<h3>Please input to every form.</h3>
+		<div class="clearfix"></div>
+		<form method="GET" action="/api" id="grpForm">
+			<input type="hidden" name="origin" value="crtGrp">
+			<input type="hidden" name="request" value="crtGrp">
+			Goup Name: <input class="padding" type="text" name="name"><p><p>
+			Leader: <select id="leader" form="grpForm" name="leader">
+		</select><p>
+		Location: <input class="padding" type="text" name="location"><p>
+		GSM: <input class="padding" type="text" name="gsm"><p>
 
-<br><br><input type="submit" class="btn btn-warning" value="Save">
-</form>
+		<br><br><input type="submit" class="btn btn-warning" value="Save">
+	</form>
 </div>
- </div>
- </body>
+</div>
+</body>
 <script src="/lib/jquery/dist/jquery.js"></script>
-	<script type="text/javascript">
+<script type="text/javascript">
 	var api = "http://knet.kcorporation.tk/api";
 	var write;
 	var index;
-		function getAdmin(){
+	function getAdmin(){
 		request("usrPage", "isAdmin", function(admin){
-		console.log(admin);
+			console.log(admin);
 			if(admin == "true")
 			{
-			document.getElementById("dash").style = "display:block";
-			document.getElementById("um").style = "display:block";
-		}
+				document.getElementById("dash").style = "display:block";
+				document.getElementById("um").style = "display:block";
+			}
 		});
-		}
-		function getUsers()
-		{
-			request("usrMgr", "totalUsers", function(users){
-				var usrArr = users.split(',');
-				index = usrArr.length;
-				usrArr.forEach(function(usr){
-			usrReq("usrPage", "usrInfo", usr, function(att){
-				att = JSON.parse(att);
-				write = write + "<option value='"+ att.cred.id +"'> "+att.info.name.replace(/\+/g, " ") +" ("+att.cred.id+")";
-				index--;
-				if(index == 0)
-				{
-					render();
-				}
+	}
+	function getUsers()
+	{
+		request("usrMgr", "totalUsers", function(users){
+			var usrArr = users.split(',');
+			index = usrArr.length;
+			usrArr.forEach(function(usr){
+				usrReq("usrPage", "usrInfo", usr, function(att){
+					att = JSON.parse(att);
+					write = write + "<option value='"+ att.cred.id +"'> "+att.info.name.replace(/\+/g, " ") +" ("+att.cred.id+")";
+					index--;
+					if(index == 0)
+					{
+						render();
+					}
+				});
 			});
-			});
-			});
-		}
-		getAdmin();
-		getUsers();
-		function success()
-		{
-			document.getElementById("Box").style = "display:block";
+		});
+	}
+	getAdmin();
+	getUsers();
+	function success()
+	{
+		document.getElementById("Box").style = "display:block";
 		document.getElementById("Box").innerHTML = "<p class='Box'>User Created!</p>";
 		document.getElementById("Box").className = "success";
 		document.getElementById("usrForm").reset();
-		}
+	}
 
-		function render()
-		{
-			document.getElementById("leader").innerHTML = write;
-		}
-	</script>
- </html>
+	function render()
+	{
+		document.getElementById("leader").innerHTML = write;
+	}
+</script>
+</html>

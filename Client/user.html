@@ -81,6 +81,7 @@
 				});
 
 			}
+			document.getElementById("response").style = "display:none"
 			if( att.info.attentionResponse != undefined)
 			{
 				document.getElementById("response").style = "display:inline"
@@ -114,6 +115,13 @@
 		}
 	}
 
+	function refresh(){
+		setTimeout(function(){
+			getResponse();
+			refresh();
+		}, 5000);
+	}
 	getName();
+	refresh();
 </script>
 </html>

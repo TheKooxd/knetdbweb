@@ -45,7 +45,7 @@
  			<input id="admin" type='button' class='btn btn-warning disabled' value='Not Admin' onclick="set('admin')">
  			<input id="op" type='button' class='btn btn-danger disabled' value='Not Operator' onclick="set('operator')">
  			<input id="staff" type='button' class='btn btn-info disabled' value='Not Staff' onclick="set('staff')">
- 			<input id="user" type='button' class='btn btn-Success disabled' value='Not User'>
+ 			<input id="user" type='button' class='btn btn-Success disabled' value='Not User' onclick="set('user')">
  		</div>
  		<div id="attDiv" class="inv-box" style="display:none">
  			<h3>Attention notice from user </h3>
@@ -60,7 +60,7 @@
  		<div class="inv-box"></div>
  		<div id="responseDiv" class="inv-box" style="display:none">
  			<h3>Write Response </h3>
- 			<textarea rows="4" cols="50" id="answerText" form="answerForm">Enter text here...</textarea>
+ 			<textarea rows="4" cols="50" id="answerText" form="answerForm" placeholder="Enter text here..."></textarea>
  			Keep attention on: <input type="checkbox" id="keepAttention" checked="true"><br>
  			<input id="answerAttBtt" type='button' class='btn btn-success' value='Send response' onclick="sendResponse()">
  		</div>
@@ -171,6 +171,18 @@
  			}
  		}
 
+ 		if(type == "user")
+ 		{
+ 			if(att.info.user == "true")
+ 			{
+ 				callback(false)
+ 			}
+ 			else
+ 			{
+ 				callback(true);
+ 			}
+ 		}
+
  		if(type == "staff")
  		{
  			if(att.info.staff == "true")
@@ -222,7 +234,7 @@
  		changeUsrInfo("id", document.getElementById('id').value, att.cred.id, function(status){
  			changeUsrInfo("email", document.getElementById("email").value, att.cred.id, function(status){
  				changeUsrInfo("gsm", document.getElementById("gsm").value, att.cred.id, function(status){
- 					window.location.reload();
+ 						window.location.reload();
  				});
  			});
  		});

@@ -1,87 +1,87 @@
  <!DOCTYPE html>
-<html>
-<head>
-	<title> KNET DATABASE WEB LINK </title>
-<link rel="stylesheet" href="/lib/bootstrap.css">
-	<link rel="stylesheet" type="text/css" href="default.css">
-	<script src="js/normal.js"></script>
-</head>
-<body class="login">
+ <html>
+ <head>
+ 	<title> KNET DATABASE WEB LINK </title>
+ 	<link rel="stylesheet" href="/lib/bootstrap.css">
+ 	<link rel="stylesheet" type="text/css" href="default.css">
+ 	<script src="js/normal.js"></script>
+ </head>
+ <body class="login">
 
-<div id="Box" class "null" style="display:none">
-<!-- Content will be drawn by javascript -->
-</div>
-<div id = "loginBox">
-<input type = "text" id = "id" value = "User ID" onclick="removeTextUsr()">
-<br>
-<input type = "password" id = pass value = "Pass" onclick="removeTextPass()">
-<br>
-<input class="btn btn-warning" type = submit onclick = "getCode()" name = "submit" value = "LOGIN" id="btnMargin2">
-</div>
-<footer id="footer">
-<hr>
-&copy; 2016-2016 KCORPORATION.TK ALL RIGHTS RESERVED <br>
-&copy; 2016-2016 K-CORPORATION ALL RIGHTS RESERVED
-</footer>
- <script src="/lib/jquery/dist/jquery.js"></script>
-	<script type="text/javascript">
-	var api = "http://knet.kcorporation.tk/api";
-	var result = "data";
-	var par = getParameterByName("loggedOut");
-	if(par)
-	{
-		document.getElementById("Box").style = "display:block";
-		document.getElementById("Box").innerHTML = "<p class='Box'>You Logged Out!</p>";
-		document.getElementById("Box").className = "success";
-	}
-	function getCode(){
-data = $.ajax({
-			url: api,
-			dataType: 'text',
-			method: 'get',
-			crossDomain: true,
-			data: {"id":document.getElementById("id").value,"pass":document.getElementById("pass").value,"origin":"login"},
-			success: function(data) {
-				window.location.href = "user.html";
-				document.getElementById("code").style = "display:block";
-				document.getElementById("code").style = "display:block";
-				document.getElementById("btnMargin2").value = "Login as: "+data;
+ 	<div id="Box" class "null" style="display:none">
+ 		<!-- Content will be drawn by javascript -->
+ 	</div>
+ 	<div id = "loginBox">
+ 		<input type = "text" id = "id" value = "User ID" onclick="removeTextUsr()">
+ 		<br>
+ 		<input type = "password" id = pass value = "Pass" onclick="removeTextPass()">
+ 		<br>
+ 		<input class="btn btn-warning" type = submit onclick = "getCode()" name = "submit" value = "LOGIN" id="btnMargin2">
+ 	</div>
+ 	<footer id="footer">
+ 		<hr>
+ 		&copy; 2016-2016 KCORPORATION.TK ALL RIGHTS RESERVED <br>
+ 		&copy; 2016-2016 K-CORPORATION ALL RIGHTS RESERVED
+ 	</footer>
+ 	<script src="/lib/jquery/dist/jquery.js"></script>
+ 	<script type="text/javascript">
+ 		var api = "http://knet.kcorporation.tk/api";
+ 		var result = "data";
+ 		var par = getParameterByName("loggedOut");
+ 		if(par)
+ 		{
+ 			document.getElementById("Box").style = "display:block";
+ 			document.getElementById("Box").innerHTML = "<p class='Box'><b>You Logged Out!</b></p><p>This means that your old cookie was marked as old in the server which should prevent other people accessing your profile without your password.";
+ 			document.getElementById("Box").className = "success";
+ 		}
+ 		function getCode(){
+ 			data = $.ajax({
+ 				url: api,
+ 				dataType: 'text',
+ 				method: 'get',
+ 				crossDomain: true,
+ 				data: {"id":document.getElementById("id").value,"pass":document.getElementById("pass").value,"origin":"login"},
+ 				success: function(data) {
+ 					window.location.href = "user.html";
+ 					document.getElementById("code").style = "display:block";
+ 					document.getElementById("code").style = "display:block";
+ 					document.getElementById("btnMargin2").value = "Login as: "+data;
 
-			},
-			error: function(data) {
-				console.log(data);
-				if(data.status == 403)
-				{
-					document.getElementById("Box").style = "display:block";
-					document.getElementById("Box").className = "error";
-					document.getElementById("Box").innerHTML = "<p class='Box'>Username or password wrong!</p>";
-				}
-				if(data.status == 503)
-				{
-					document.getElementById("Box").style = "display:block";
-					document.getElementById("Box").className = "warning";
-					document.getElementById("Box").innerHTML = "<p class='Box'>Server Down!</p>";
-				}
-				else
-				{
-					document.getElementById("Box").style = "display:block";
-					document.getElementById("Box").className = "error";
-					document.getElementById("Box").innerHTML = "<p class='Box'>Wrong Password!</p>";
-				}
-				
-			}
-		});
-	}
-	function removeTextUsr()
-	{
-		
-			document.getElementById("id").value = "";
-	}
-	function removeTextPass()
-	{
-		
-	document.getElementById("pass").value = "";
-	}
-	</script>
-</body>
-</html>
+ 				},
+ 				error: function(data) {
+ 					console.log(data.status);
+ 					if(data.status == "403")
+ 					{
+ 						document.getElementById("Box").style = "display:block";
+ 						document.getElementById("Box").className = "error";
+ 						document.getElementById("Box").innerHTML = "<p class='Box'><b>Username or password wrong!</b></p><p>You can recover your password by contacting local admin or operator.</p>";
+ 					}
+ 					if(data.status == "402")
+ 					{
+ 						document.getElementById("Box").style = "display:block";
+ 						document.getElementById("Box").className = "error";
+ 						document.getElementById("Box").innerHTML = "<p class='Box'><b>Your account has been disabled by operator(s)!</p></b><p>If you think this is error, contact your local operator.</p>";
+ 					}
+ 					if(data.status == "503")
+ 					{
+ 						document.getElementById("Box").style = "display:block";
+ 						document.getElementById("Box").className = "warning";
+ 						document.getElementById("Box").innerHTML = "<p class='Box'><b>Can't reach the KNET DATABASE API SERVER</b></p><p>There might be a scheduled maintance. Please come back later!";
+ 					}
+
+ 				}
+ 			});
+ 		}
+ 		function removeTextUsr()
+ 		{
+
+ 			document.getElementById("id").value = "";
+ 		}
+ 		function removeTextPass()
+ 		{
+
+ 			document.getElementById("pass").value = "";
+ 		}
+ 	</script>
+ </body>
+ </html>

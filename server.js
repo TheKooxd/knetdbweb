@@ -41,47 +41,6 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 	console.log(par);
 	console.log(".")
 	usrId = request.session.data.user;
-	if(par.request == "attention")
-	{
-		setAttention(function(code){
-			resCode = code;
-			next();
-		});
-	}
-
-	if(par.request == "getAttention")
-	{
-		getAttention(function(code){
-			resCode = code;
-			next();
-		});
-	}
-
-	if(par.request == "changeUsrInfo")
-	{
-		changeUsrInfo(par.term, par.value,par.id , function(code){
-			resCode = code;
-			console.log(resCode);
-			next();
-		});
-	}
-
-	if(par.request == "changeGrpInfo")
-	{
-		changeGrpInfo(par.term, par.value,par.id , function(code){
-			resCode = code;
-			console.log(resCode);
-			next();
-		});
-	}
-
-	if(par.origin == "crtGrp" && par.request == "crtGrp")
-	{
-		crtGrp(function(code){
-			resCode = code;
-			next();
-		});
-	}
 
 	if(par.origin == "login")
 	{
@@ -94,92 +53,138 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 		
 	}
 
-	if(par.origin == "database")
+	if(request.session.data.user != "Guest")
 	{
-		if(par.request == "search")
+
+		if(par.request == "attention")
 		{
-			searchDatabase(par.term, par.value, function(result){
-			});
-		}
-	}
-
-
-
-	if(par.origin == "crtUsr")
-	{
-		if(par.request == "crtUsr")
-		{
-			crtUsr(function(code){
+			setAttention(function(code){
+				resCode = code;
 				next();
 			});
 		}
-	}
 
-	if(par.origin == "usrMgr")
-	{
-		if(par.request == "totalUsers")
+		if(par.request == "getAttention")
 		{
-
-			getUsrs(function(allUsers){
-				resCode = allUsers;
+			getAttention(function(code){
+				resCode = code;
 				next();
 			});
 		}
-	}
 
-	if(par.origin == "grpMgr")
-	{
-		if(par.request == "totalGroups")
+		if(par.request == "changeUsrInfo")
 		{
-
-			getGrp(function(allGrp){
-				resCode = allGrp;
+			changeUsrInfo(par.term, par.value,par.id , function(code){
+				resCode = code;
+				console.log(resCode);
 				next();
 			});
 		}
-	}
 
-	if(par.request == "grpInfo")
-	{
-		getGrpInfo(par.id, function(callback){
-			grpInfo = callback;
-			resCode = 200;
-			next();
-		});
-	}
-
-	if(par.origin == "usrPage")
-	{
-		if(par.request == "usrName" || par.request == "usrInfo")
+		if(par.request == "changeGrpInfo")
 		{
-			if(par.usrId != undefined)
+			changeGrpInfo(par.term, par.value,par.id , function(code){
+				resCode = code;
+				console.log(resCode);
+				next();
+			});
+		}
+
+		if(par.origin == "crtGrp" && par.request == "crtGrp")
+		{
+			crtGrp(function(code){
+				resCode = code;
+				next();
+			});
+		}
+
+		if(par.origin == "database")
+		{
+			if(par.request == "search")
 			{
-				usrId = par.usrId;
+				searchDatabase(par.term, par.value, function(result){
+				});
 			}
-			else
+		}
+
+
+
+		if(par.origin == "crtUsr")
+		{
+			if(par.request == "crtUsr")
 			{
-				usrId = request.session.data.user;
+				crtUsr(function(code){
+					next();
+				});
 			}
-			getUsrInfo(function(callback){
-				usrInfo = callback;
+		}
+
+		if(par.origin == "usrMgr")
+		{
+			if(par.request == "totalUsers")
+			{
+
+				getUsrs(function(allUsers){
+					resCode = allUsers;
+					next();
+				});
+			}
+		}
+
+		if(par.origin == "grpMgr")
+		{
+			if(par.request == "totalGroups")
+			{
+
+				getGrp(function(allGrp){
+					resCode = allGrp;
+					next();
+				});
+			}
+		}
+
+		if(par.request == "grpInfo")
+		{
+			getGrpInfo(par.id, function(callback){
+				grpInfo = callback;
+				resCode = 200;
+				next();
+			});
+		}
+
+		if(par.origin == "usrPage")
+		{
+			if(par.request == "usrName" || par.request == "usrInfo")
+			{
+				if(par.usrId != undefined)
+				{
+					usrId = par.usrId;
+				}
+				else
+				{
+					usrId = request.session.data.user;
+				}
+				getUsrInfo(function(callback){
+					usrInfo = callback;
+					next();
+				}
+				);
+			}
+
+
+			if(par.request == "logout")
+			{
+				request.session.data.user = "Guest";
 				next();
 			}
-			);
-		}
 
-		
-		if(par.request == "logout")
-		{
-			request.session.data.user = "Guest";
-			next();
-		}
+			if(par.request == "isAdmin")
+			{
+				getUsrInfo(function(data){
 
-		if(par.request == "isAdmin")
-		{
-			getUsrInfo(function(data){
-
-			});
-			next();
+				});
+				next();
+			}
 		}
 	}
 }
@@ -243,7 +248,6 @@ function changeUsrInfo(term, value, id, callback)
 				console.log(data);
 				if(term == 'admin')
 				{
-					console.log("hoi");
 					data.info.admin = value;
 				}
 				if(term == 'id')
@@ -361,13 +365,18 @@ function checkLogin(callback) //Needs somekind of lock function for encryptor bu
 		{
 			usrInfo = JSON.parse(data);
 			encrypt(par.pass, function(usrPass){
-
-				if(usrPass == usrInfo.cred.pass)
+				console.log(usrInfo.info.user);
+				if(usrPass == usrInfo.cred.pass && usrInfo.info.user == "true")
 				{
 					callback(200);
 				}
 				else
 				{
+					if(usrInfo.info.user != "true")
+					{
+						callback(402);
+						console.log(usrInfo.info.name + " tried to log in with disabled account!")
+					}
 					callback(403);
 					console.log(par.id+" had wrong password")
 				}
@@ -525,6 +534,7 @@ function setAttention(callback)
 		{
 			usrInfo.info.attention = "true";
 			usrInfo.info.attentionReason = par.comment.replace(/%3F/g, "?");
+			usrInfo.info.attentionResponse = undefined;
 			jsonfile.writeFile("cred/"+usrInfo.cred.id, usrInfo, function(err){
 				if(err)
 				{
