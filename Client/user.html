@@ -36,6 +36,8 @@
  	</div>
  	<div class="big-box" id="attDiv" style="display:none">
  	</div>
+ 	<div class="big-box" id="message" style="display:none">
+ 	</div>
  </div>
 </body>
 <script src="/lib/jquery/dist/jquery.js"></script>
@@ -52,6 +54,7 @@
 				isAdmin = true;
 			}
 			getResponse();
+			getMessage();
 		});
 	}
 	function getName(){
@@ -101,6 +104,14 @@
 	function attList()
 	{
 		window.location.href = 'usrAtt.html'
+	}
+
+	function getMessage() {
+		var par = getJsonFromUrl();
+		if(par.box == "attention") {
+			document.getElementById("attDiv").style = "display:block";
+			document.getElementById("attDiv").innerHTML = "<h3> Your help request has been saved! </h3><hr> Please wait till admins have time to contact you. We let you know when your attention request is being processed";
+		}
 	}
 
 	getName();

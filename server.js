@@ -66,6 +66,15 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 		});
 	}
 
+	if(par.request == "changeGrpInfo")
+	{
+		changeGrpInfo(par.term, par.value,par.id , function(code){
+			resCode = code;
+			console.log(resCode);
+			next();
+		});
+	}
+
 	if(par.origin == "crtGrp" && par.request == "crtGrp")
 	{
 		crtGrp(function(code){
@@ -132,7 +141,7 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 
 	if(par.request == "grpInfo")
 	{
-		getGrpInfo(function(callback){
+		getGrpInfo(par.id, function(callback){
 			grpInfo = callback;
 			resCode = 200;
 			next();
@@ -205,10 +214,10 @@ function getUsrInfo(callback)
 	});
 }
 
-function getGrpInfo(callback)
+function getGrpInfo(id, callback)
 {
 	console.log("GRP");
-	fs.readFile('grp/'+par.id, 'utf8', function (err, data) {
+	fs.readFile('grp/'+id, 'utf8', function (err, data) {
 		if (err)
 		{
 			console.log(err);
@@ -288,6 +297,52 @@ function changeUsrInfo(term, value, id, callback)
 					if(err)
 					{
 						callback(403);
+					}
+					else{
+						callback(200);
+					}
+				});
+			}
+		});
+	})
+}
+
+function changeGrpInfo(term, value, id, callback)
+{
+	getUsrInfo(function(usr){
+		getGrpInfo(id, function(data){
+			if(usr.info.admin == "true")
+			{
+				console.log(data);
+				if(term == 'description')
+				{
+					data.info.description = value;
+				}
+				if(term == 'gsm')
+				{
+					data.info.gsm = value;
+				}
+				if(term == 'leader')
+				{
+					data.info.leader = value;
+				}
+				if(term == 'location')
+				{
+					data.info.location = value;
+				}
+				if(term == 'name')
+				{
+					data.info.name = value;
+				}
+				if(term == "attention")
+				{
+					data.info.attention = value;
+				}
+
+				jsonfile.writeFile("grp/"+id, data, function(err){
+					if(err)
+					{
+						throw(err);
 					}
 					else{
 						callback(200);
@@ -568,7 +623,7 @@ function responder(request, response, next)
 		response.write("Attention set");
 		next();
 	}
-	if(resCode == 200 && par.request == "changeUsrInfo")
+	if(resCode == 200 && par.request == "changeUsrInfo" || par.request == "changeGrpInfo")
 	{
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
 		response.write("Info Updated");

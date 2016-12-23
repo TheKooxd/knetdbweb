@@ -32,7 +32,7 @@
  	<hr>
  	To get admin help fill in the form and click this button: 
  	<input type="hidden" name="request" value="attention"><br>
- 	<textarea rows="4" cols="50" id="comment" name="comment">Enter text here...</textarea><br>
+ 	<textarea rows="4" cols="50" id="comment" name="comment" placeholder="Enter text here..."></textarea><br>
  	<input type="button" class="btn btn-info" value="Set help request" onclick="getSomeHelp()">
  </div>
 </body>
@@ -53,7 +53,7 @@
 	function getSomeHelp() {
 		console.log(JSON.stringify(document.getElementById("comment").value));
 		setAttention("help", "attention", JSON.stringify(document.getElementById("comment").value).replace(/"/g, ""), function(response){
-			console.log(response);
+			document.location.href = "user.html?box=attention";
 		});
 	}
 

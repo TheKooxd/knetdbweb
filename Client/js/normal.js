@@ -142,3 +142,32 @@
 		});
 	}
 
+	function changeGrpInfo(term, value, id, callback)
+	{
+		data = $.ajax({
+			url: api,
+			dataType: 'text',
+			method: 'get',
+			crossDomain: true,
+			data: {"request":"changeGrpInfo", "term":term, "value":value, "id":id},
+			success: function(data) {
+				callback(data);
+			},
+			error: function(data) {
+				callback(data);
+				
+				
+			}
+		});
+	}
+
+	function getJsonFromUrl() {
+		var query = location.search.substr(1);
+		var result = {};
+		query.split("&").forEach(function(part) {
+			var item = part.split("=");
+			result[item[0]] = decodeURIComponent(item[1]);
+		});
+		return result;
+	}
+

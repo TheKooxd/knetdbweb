@@ -69,9 +69,12 @@ p.errorBox{
 }
 
 .classy {
-	width: 200px;
 	border: none;
 	border-color: transparent;
+}
+
+input.classy {
+	width: 200px;
 }
 
 ul.nav{
