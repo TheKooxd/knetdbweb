@@ -4,6 +4,8 @@ path = require("path");
 var jsonfile = require('jsonfile')
 var fs = require('fs');
 var session = require('./node_modules/sesh/lib/core').magicSession();
+var redis = require("redis"),
+client = redis.createClient();
 
 var crypto = require('crypto'),
 algorithm = 'aes-256-ctr',
@@ -12,9 +14,11 @@ var app = connect();
 var par;
 var resCode;
 var usrId;
+var buUsrId;
 var usrInfo;
 var grpInfo;
 var reqId;
+var log;
 function encrypt(text, callback){
 	var cipher = crypto.createCipher(algorithm,password)
 	var crypted = cipher.update(text,'utf8','hex')
@@ -41,10 +45,10 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 	console.log(par);
 	console.log(".")
 	usrId = request.session.data.user;
-
+	buUsrId = request.session.data.user;
+	client.incr("requests");
 	if(par.origin == "login")
 	{
-
 		getRequest(function(code){
 			resCode = code;
 			next();
@@ -59,6 +63,13 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 		if(par.request == "attention")
 		{
 			setAttention(function(code){
+				resCode = code;
+				next();
+			});
+		}
+
+		if(par.request == "log") {
+			getLog(function (code){
 				resCode = code;
 				next();
 			});
@@ -195,25 +206,34 @@ function getRequest(callback) //Figures out what to do with request data
 {
 	if(par.origin == "login") //If request comes from login page
 	{
-		console.log(par.id+" trys to log in!");
 		checkLogin(function(reg){
 			callback(reg);
 		});
 	}
 }
 
+function getLog(callback) {
+	client.lrange("log", 0,-1, function(err, lastNode){
+		log = lastNode;
+		callback(200);
+	});	
+}
+
 function getUsrInfo(callback)
 {
-
 	fs.readFile('cred/'+usrId, 'utf8', function (err, data) {
 		if (err)
 		{
+			client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' requested user info but system responded with error');
+			client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>'+err);
 			callback(403);
 		}
 		if(data != undefined)
 		{
-
 			usrInfo = JSON.parse(data);
+			if(buUsrId != usrId) {
+				client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font>User '+buUsrId+' requested user info for user '+usrInfo.cred.id);
+			};
 			callback(usrInfo);
 		}
 	});
@@ -225,13 +245,14 @@ function getGrpInfo(id, callback)
 	fs.readFile('grp/'+id, 'utf8', function (err, data) {
 		if (err)
 		{
-			console.log(err);
+			client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' requested group info but system responded with error');
+			client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>'+err);
 			callback(403);
 		}
 		if(data != undefined)
 		{
-
 			grpInfo = JSON.parse(data);
+			client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font>User '+buUsrId+' requested group info for group '+grpInfo.info.name);
 			callback(grpInfo);
 		}
 	});
@@ -244,8 +265,7 @@ function changeUsrInfo(term, value, id, callback)
 		getUsrInfo(function(data){
 			if(usr.info.admin == "true")
 			{
-				value
-				console.log(data);
+				client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font>User '+buUsrId+' changed '+data.info.name+'\'s '+term+' to '+value);
 				if(term == 'admin')
 				{
 					data.info.admin = value;
@@ -408,6 +428,7 @@ function getUsrs(callback)
 					if (err) {
 						throw err;
 					}
+					client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font> User '+buUsrId+' listed all users in system. Result was '+files.length);
 					callback(files)
 				});
 			}
@@ -431,6 +452,7 @@ function getGrp(callback)
 					if (err) {
 						throw err;
 					}
+					client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font> User '+buUsrId+' listed all groups in system. Result was '+files.length);
 					callback(files)
 				});
 			}
@@ -478,6 +500,7 @@ function crtUsr(callback)
 						console.log(err);
 					}
 					else{
+						client.lpush('log', '['+Date()+'] <font class="err">[ADMIN]</font> User '+buUsrId+' Created new user account '+usr.cred.id+' for '+usr.info.name);
 						callback(200);
 					}
 				});
@@ -501,20 +524,20 @@ function crtGrp(callback)
 				id.length++;
 				var grp = {
 					"info" : {
-						"name": par.name,
+						"name": par.name.replace(/\+/g, ' '),
 						"location": par.location,
 						"leader": par.leader,
 						"gsm": par.gsm,
 						"id": id.length
 					}
 				};
-				id.length++;
 				jsonfile.writeFile("grp/"+id.length, grp, function(err){
 					if(err)
 					{
 						console.log(err);
 					}
 					else{
+						client.lpush('log', '['+Date()+'] <font class="err">[ADMIN]</font> User '+buUsrId+' Created new group '+grp.info.id+' for '+grp.info.name);
 						callback(200);
 					}
 				});
@@ -533,6 +556,7 @@ function setAttention(callback)
 	getUsrInfo(function(code){
 		if(code!=403)
 		{
+			client.lpush('log', '['+Date()+'] User '+buUsrId+' set attention request.');
 			usrInfo.info.attention = "true";
 			usrInfo.info.attentionReason = par.comment.replace(/%3F/g, "?");
 			usrInfo.info.attentionResponse = undefined;
@@ -556,6 +580,7 @@ function getAttention(callback)
 	getUsrInfo(function(reqUsr){
 		if(reqUsr.info.admin == "true")
 		{
+			client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font>User '+buUsrId+' is reading attentions.');
 			var usrCache;
 			getUsrs(function(users){
 				var index = 1;
@@ -603,12 +628,14 @@ function responder(request, response, next)
 {
 	if(par.origin == "usrPage" && par.request == "logout")
 	{
+		client.lpush('log', '['+Date()+']User '+usrId+' logged out');
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
 		response.write("User logged off");
 		next();
 	}
 	if(par.origin == "usrPage" && par.request == "usrName")
 	{
+		client.lpush('log', '['+Date()+'] User '+request.session.data.user+' requested name. Responded with '+usrInfo.info.name);
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
 		response.write(usrInfo.info.name);
 		resCode = 200;
@@ -695,6 +722,13 @@ function responder(request, response, next)
 	{
 		response.writeHead(301, {"Content-Type: ": "text/plain"});
 		response.write("<a href='/crtUsr.html?success=true'>User Saved Click Me to Contiune</a>");
+		response.end();
+		
+	};
+	if(par.request == "log")
+	{
+		response.writeHead(200, {"Content-Type: ": "text/plain"});
+		response.write(log.toString());
 		response.end();
 		
 	};

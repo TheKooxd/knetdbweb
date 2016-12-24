@@ -200,3 +200,13 @@ hr
 .highlight {
 	color: lime;
 }
+
+.admin {
+	color: #f99202;
+	font-weight: bold;
+}
+
+.err {
+	color: red;
+	font-weight: bold;
+}
