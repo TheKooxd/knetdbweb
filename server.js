@@ -497,6 +497,7 @@ function crtGrp(callback)
 		getGrp(function(id){
 			if(reqUsr.info.admin == "true")
 			{
+				console.log(par.name);
 				id.length++;
 				var grp = {
 					"info" : {
@@ -686,7 +687,7 @@ function responder(request, response, next)
 	if(par.request == "crtGrp")
 	{
 		response.writeHead(301, {"Content-Type: ": "text/plain"});
-		response.write("<a href='/grpUsr.html?success=true'>Group Saved Click Me to Contiune</a>");
+		response.write("<a href='/grpMgmt.html?success=true'>Group Saved Click Me to Contiune</a>");
 		response.end();
 		
 	};

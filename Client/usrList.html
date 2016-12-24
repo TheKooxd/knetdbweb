@@ -46,7 +46,7 @@
 <script src="/lib/jquery/dist/jquery.js"></script>
 <script type="text/javascript">
 	var api = "http://knet.kcorporation.tk/api";
-	var write = "<tr id='usrTr'><th>ID</th><th>Name</th><th>Creation date</th><th>Admin</th></tr>";
+	var write = "<tr id='usrTr'><th>ID</th><th>Name</th><th>Group</th><th>Enabled</th></tr>";
 	var usrName;
 	function getAdmin(){
 		request("usrPage", "isAdmin", function(admin){
@@ -66,10 +66,10 @@
 			usrArr.forEach(function(usr){
 				usrReq("usrPage", "usrInfo", usr, function(att){
 					att = JSON.parse(att);
-					if(att.info.admin == "true") {
-						att.info.admin = "<b class='admin'>TRUE</b>"
+					if(att.info.user == "true") {
+						att.info.user = "<b class='highlight'>TRUE</b>"
 					}
-					write = write + "<tr id='usrTr'><td><a href='usrInfo.html?usrId="+att.cred.id+"'>"+ att.cred.id +"</a></td></a><td>"+ att.info.name.replace('+', ' ') +"</td><td>n/a</td><td>"+att.info.admin+"</td></tr>"
+					write = write + "<tr id='usrTr'><td><a href='usrInfo.html?usrId="+att.cred.id+"'>"+ att.cred.id +"</a></td></a><td>"+ att.info.name.replace('+', ' ') +"</td><td>"+ att.info.group +"</td><td>"+att.info.user+"</td></tr>"
 					console.log("current User: "+usr);
 					console.log("current Index: "+index);
 					index--;

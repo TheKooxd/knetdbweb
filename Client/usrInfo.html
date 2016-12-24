@@ -156,6 +156,7 @@
 			grpArr.forEach(function(grp){
 				grpReq("grpMgr", "grpInfo", grp, function(grpInfo){
 					grpInfo = JSON.parse(grpInfo);
+					grpInfo.info.name = grpInfo.info.name.replace(/\+/g, ' ');
 					if(att.info.group == grpInfo.info.name)
 					{
 						write = write + "<option selected='selected' value='"+grpInfo.info.name+"'>"+grpInfo.info.name+"</option>"
