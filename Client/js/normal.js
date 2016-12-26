@@ -1,4 +1,5 @@
 	var api = "http://knet.kcorporation.tk/api";
+	var _ = "lodash.js"
 	function logout()
 	{
 
@@ -171,3 +172,16 @@
 		return result;
 	}
 
+	function formatNumber(number, separator) {
+		if(number < 1000) {
+			return number;
+		}
+		if(number < 1000000) {
+			number = number.substring(0, number.length - 3) + separator + 'k';
+			return number;
+		}
+		else {
+			number = number.substring(0, number.length - 6) + separator + 'milj';
+			return number;
+		}
+	}

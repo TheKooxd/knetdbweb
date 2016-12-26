@@ -19,6 +19,7 @@ var usrInfo;
 var grpInfo;
 var reqId;
 var log;
+var stat;
 function encrypt(text, callback){
 	var cipher = crypto.createCipher(algorithm,password)
 	var crypted = cipher.update(text,'utf8','hex')
@@ -33,7 +34,6 @@ function decrypt(text, callback){
 	dec += decipher.final('utf8');
 	callback(dec);
 }
-
 function getPar(request, response, next) //Reads URL parameters to object and saves them to global variable "par"
 {
 	console.log("=======================================================================")
@@ -46,7 +46,7 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 	console.log(".")
 	usrId = request.session.data.user;
 	buUsrId = request.session.data.user;
-	client.incr("requests");
+	client.incr("totalReq");
 	if(par.origin == "login")
 	{
 		getRequest(function(code){
@@ -69,9 +69,36 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 		}
 
 		if(par.request == "log") {
-			getLog(function (code){
-				resCode = code;
-				next();
+			getUsrInfo(function(usrCache){
+				if(usrCache.info.operator == "true") {
+					getLog(function (code){
+						resCode = code;
+						next();
+					});
+				}
+				else {
+					resCode = 403;
+					next();
+				}
+			});
+		}
+
+		if(par.request == "stats") {
+			getUsrInfo(function(usrCache){
+				if(usrCache.info.operator == "true") {
+					client.get(par.term, function(err, reply) {
+						if(err) {
+							client.incr('totalErr');
+							client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' requested system stats but redis cache responded with error');
+						}
+						stat = reply;
+						next();
+					})
+				}
+				else {
+					stat = 403;
+					next();
+				}
 			});
 		}
 
@@ -214,6 +241,10 @@ function getRequest(callback) //Figures out what to do with request data
 
 function getLog(callback) {
 	client.lrange("log", 0,-1, function(err, lastNode){
+		if(err) {
+			client.incr('totalErr');
+			client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' requested system log but redis cache responded with error!');
+		}
 		log = lastNode;
 		callback(200);
 	});	
@@ -224,6 +255,7 @@ function getUsrInfo(callback)
 	fs.readFile('cred/'+usrId, 'utf8', function (err, data) {
 		if (err)
 		{
+			client.incr('totalErr');
 			client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' requested user info but system responded with error');
 			client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>'+err);
 			callback(403);
@@ -245,6 +277,7 @@ function getGrpInfo(id, callback)
 	fs.readFile('grp/'+id, 'utf8', function (err, data) {
 		if (err)
 		{
+			client.incr('totalErr');
 			client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' requested group info but system responded with error');
 			client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>'+err);
 			callback(403);
@@ -265,7 +298,7 @@ function changeUsrInfo(term, value, id, callback)
 		getUsrInfo(function(data){
 			if(usr.info.admin == "true")
 			{
-				client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font>User '+buUsrId+' changed '+data.info.name+'\'s '+term+' to '+value);
+				client.lpush('log', '['+Date()+'] <font class="err">[ADMIN]</font>User '+buUsrId+' changed '+data.info.name+'\'s '+term+' to '+value);
 				if(term == 'admin')
 				{
 					data.info.admin = value;
@@ -320,6 +353,8 @@ function changeUsrInfo(term, value, id, callback)
 				jsonfile.writeFile("cred/"+id, data, function(err){
 					if(err)
 					{
+						client.incr('totalErr');
+						client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' tried to save new user account but FS gave error: '+err);
 						callback(403);
 					}
 					else{
@@ -366,7 +401,8 @@ function changeGrpInfo(term, value, id, callback)
 				jsonfile.writeFile("grp/"+id, data, function(err){
 					if(err)
 					{
-						throw(err);
+						client.incr('totalErr');
+						client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' tried to save new group but FS gave error: '+err);
 					}
 					else{
 						callback(200);
@@ -380,7 +416,11 @@ function changeGrpInfo(term, value, id, callback)
 function checkLogin(callback) //Needs somekind of lock function for encryptor but not big deal yet
 {
 	fs.readFile('cred/'+par.id, 'utf8', function (err, data) {
-		if (err) callback(403);
+		if (err) {
+			client.incr('totalErr');
+			client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>System tried access "/cred" but FS gave error: '+err);
+			callback(403)
+		}
 		if(data != undefined)
 		{
 			usrInfo = JSON.parse(data);
@@ -426,7 +466,8 @@ function getUsrs(callback)
 			{
 				fs.readdir("cred/", function (err, files) {
 					if (err) {
-						throw err;
+						client.incr('totalErr');
+						client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' tried to list all the users but couldn\'t reach it');
 					}
 					client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font> User '+buUsrId+' listed all users in system. Result was '+files.length);
 					callback(files)
@@ -450,7 +491,8 @@ function getGrp(callback)
 			{
 				fs.readdir("grp/", function (err, files) {
 					if (err) {
-						throw err;
+						client.incr('totalErr');
+						client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' tried to list all the groups but couldn\'t reach it');
 					}
 					client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font> User '+buUsrId+' listed all groups in system. Result was '+files.length);
 					callback(files)
@@ -497,7 +539,8 @@ function crtUsr(callback)
 				jsonfile.writeFile("cred/"+par.id, usr, function(err){
 					if(err)
 					{
-						console.log(err);
+						client.incr('totalErr');
+						client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' tried to create user but couldn\'t do that it');
 					}
 					else{
 						client.lpush('log', '['+Date()+'] <font class="err">[ADMIN]</font> User '+buUsrId+' Created new user account '+usr.cred.id+' for '+usr.info.name);
@@ -534,7 +577,8 @@ function crtGrp(callback)
 				jsonfile.writeFile("grp/"+id.length, grp, function(err){
 					if(err)
 					{
-						console.log(err);
+						client.incr('totalErr');
+						client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' tried to create new group but couldn\'t do that');
 					}
 					else{
 						client.lpush('log', '['+Date()+'] <font class="err">[ADMIN]</font> User '+buUsrId+' Created new group '+grp.info.id+' for '+grp.info.name);
@@ -563,7 +607,8 @@ function setAttention(callback)
 			jsonfile.writeFile("cred/"+usrInfo.cred.id, usrInfo, function(err){
 				if(err)
 				{
-					callback(403);
+					client.incr('totalErr');
+					client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' tried to set attention but FS gave error');
 				}
 				else{
 					callback(200);
@@ -629,6 +674,7 @@ function responder(request, response, next)
 	if(par.origin == "usrPage" && par.request == "logout")
 	{
 		client.lpush('log', '['+Date()+']User '+usrId+' logged out');
+		client.decr('loggedInCount');
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
 		response.write("User logged off");
 		next();
@@ -645,6 +691,14 @@ function responder(request, response, next)
 	{
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
 		response.write(JSON.stringify(usrInfo));
+		resCode = 200;
+		next();
+	}
+	if(par.request == "stats")
+	{
+		response.writeHead(200, {"Content-Type: ": "text/plain"});
+		console.log('Reponse: '+stat);
+		response.write(stat.toString());
 		resCode = 200;
 		next();
 	}
@@ -697,6 +751,8 @@ function responder(request, response, next)
 	}
 	if(par.origin == "login" && resCode == 200)
 	{
+		client.lpush("log", '['+Date()+'] '+par.id+' LOGGED IN.');
+		client.incr('loggedInCount');
 		console.log("GIVING SESSION COOKIE");
 		request.session.data.user = par.id;
 		request.session.lifetime = 604800;
@@ -742,10 +798,26 @@ function responder(request, response, next)
 	response.end();
 }
 
+client.hgetall('config', function(err, config){
+	if(err) {
+		client.incr('totalErr');
+		client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>Cannot load config from redis');
+		console.log(err);
+	}
+	app.use(getPar);
+	app.use(responder);
 
-app.use(getPar);
-app.use(responder);
+	if(config.resetLoggedInCount == "true") {
+		client.set('loggedInCount', 0);
+	}
+	
+	if(config.resetTotalReq == "true") {
+		client.set('totalReq', 0);
+	}
+	if(config.resetTotalErr == "true") {
+		client.set('totalErr', 0)
+	};
 
-
-http.createServer(app).listen(8000);
-console.log("Server is running On port 8000");
+	http.createServer(app).listen(8000);
+	console.log("Server is running On port 8000");
+});

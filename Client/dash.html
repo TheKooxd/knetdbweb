@@ -6,6 +6,7 @@
  	<link rel="stylesheet" type="text/css" href="default.css">
  	<link rel="stylesheet" type="text/css" href="links.css">
  	<script src="js/normal.js"></script>
+ 	<script type="text/javascript" src="/lib/lodash.js"></script>
  </head>
  <body>
  	<div id="controls">
@@ -30,56 +31,123 @@
  <div id="content">
  	<h2 id="userWelcome"> KNET-DATABASE Operator Dashboard </h2>
  	<hr>
- 	<h2>System Log</h2>
- 	Choose how many lines: 
- 	<select id="rowSelector" onchange="getLog()">
- 		<option value="10">10</option>
- 		<option value="25">25</option>
- 		<option value="50">50</option>
- 		<option value="100">100</option>
- 	</select>
- 	<div id=log>
+ 	<div class="inv-box">
+ 		<a href="sysLog.html"><h2>System Log</h2></a>
+ 		<hr>
+ 		Choose how many lines: 
+ 		<select id="rowSelector" onchange="getLog()">
+ 			<option value="10">10</option>
+ 			<option value="25">25</option>
+ 			<option value="50">50</option>
+ 			<option value="100">100</option>
+ 		</select>
+ 		<br>
+ 		<input type="checkbox" id="opAdmin" name="filter" value="admin" onclick="getLog()" checked>Show admin messages<br>
+ 		<input type="checkbox" id="opErr" name="filter" value="err" onclick="getLog()" checked>Show error messages<br>
+ 		<input type="checkbox" id="opNormal" name="filter" value="normal" onclick="getLog()" checked>Show normal messages<br>
+ 	</p>
+ 	<div id="log" class="log">
  	</div>
- 	<hr>
  </div>
- <script src="/lib/jquery/dist/jquery.js"></script>
- <script type="text/javascript">
- 	var api = "http://knet.kcorporation.tk/api";
- 	var att;
- 	var isAdmin = false;
- 	var renderArr = [];
- 	function getAdmin(){
- 		request("usrPage", "isAdmin", function(admin){
- 			if(admin == "true")
- 			{
- 				document.getElementById("dash").style = "display:block";
- 				document.getElementById("um").style = "display:block";
- 				isAdmin = true;
- 			}
- 			getLog();
- 		});
- 	}
- 	function getName(){
- 		request("usrPage", "usrName", function(name){
- 			getAdmin();
- 		});
- 	}
- 	function getLog() {
- 		request("dashboard", "log", function(log){
- 			log = log.split(',');
- 			log.forEach(function (line, index){
- 				renderArr[index] = line + "<br>";
- 				if(index == log.length - 1) {
- 					render();
- 				}
- 			});
- 		});
- 	}
- 	function render() {
+ <div class="inv-box">
+ 	<h2>Statistics</h2>
+ 	<hr>
+ 	<div class="mini-box">
+ 		<h1 id="loggedInUsers" class="mini-box"></h1>
+ 		Currently logged in users
+ 	</div>
+ 	<div class="mini-box">
+ 		<h1 id="totalReq" class="mini-box">0</h1>
+ 		Total requests
+ 	</div>
+ 	<div class="mini-box">
+ 		<h1 id="totalErr" class="mini-box">0</h1>
+ 		Total erros logged
+ 	</div>
+ </div>
+</div>
+<script src="/lib/jquery/dist/jquery.js"></script>
+<script type="text/javascript">
+	var api = "http://knet.kcorporation.tk/api";
+	var att;
+	var isAdmin = false;
+	var renderArr = [];
+	function getAdmin(){
+		request("usrPage", "isAdmin", function(admin){
+			if(admin == "true")
+			{
+				document.getElementById("dash").style = "display:block";
+				document.getElementById("um").style = "display:block";
+				isAdmin = true;
+			}
+			getLog();
+		});
+	}
+	function getName(){
+		request("usrPage", "usrName", function(name){
+			getAdmin();
+		});
+	}
+	function getLog() {
+		request("dashboard", "log", function(log){
+			log = log.split(',');
+			log.forEach(function (line, index){
+				renderArr[index] = line + "<br>";
+				if(index == log.length - 1) {
+					render();
+					getStats();
+				}
+			});
+		});
+	}
+	function getStats() {
+		dbReq("dashboard", "stats", "loggedInCount", function(reply){
+			document.getElementById('loggedInUsers').innerHTML = formatNumber(reply, ' ');
+			dbReq("dashboard", "stats", "totalReq", function(reply){
+				document.getElementById('totalReq').innerHTML = formatNumber(reply, ' ');
+				dbReq("dashboard", "stats", "totalErr", function(reply){
+					document.getElementById('totalErr').innerHTML = formatNumber(reply, ' ');
+				});
+			});
+		});
+	}
+	function render() {
 		renderArr = renderArr.slice(0, document.getElementById('rowSelector').value);
+		renderArr = renderArr.filter(parser);
 		document.getElementById('log').innerHTML = renderArr.toString().replace(/,|GMT\+0200 \(EET\)/g, ' ');
 	}
-	getAdmin();
-</script>
+	function parser(line) {
+		if(document.getElementById('opNormal').checked) {
+			if(line.includes('[ADMIN]') || line.includes('[ERR]')) {
+
+			}
+			else {
+				return line; 				}
+			}
+
+			if(document.getElementById('opAdmin').checked) {
+				if(line.includes('[ADMIN]')) {
+					return line;
+				}
+			}
+
+			if(document.getElementById('opErr').checked) {
+				if(line.includes('[ERR]')) {
+					return line;
+				}
+			}
+
+		}
+
+		function updateDash(){
+			setTimeout(function(){
+				getLog();
+				updateDash();
+			}, 2000);
+
+		}
+		getAdmin();
+		updateDash();
+	</script>
 </body>
 </html>

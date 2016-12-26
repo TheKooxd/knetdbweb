@@ -173,6 +173,19 @@ div.big-box{
 	display: inline;
 }
 
+div.mini-box{
+	margin: 10px;
+	width: 30%;
+	margin-left: 0px;
+	float:left;
+	display: inline;
+	text-align: center;
+}
+
+h1.mini-box {
+	font-size: 2vW;
+}
+
 .left{
 	align-self: left;
 }
@@ -209,4 +222,9 @@ hr
 .err {
 	color: red;
 	font-weight: bold;
+}
+
+.log {
+	font-size: 8px; 
+	font-family: "Lucida Console", Monaco, monospace;
 }
