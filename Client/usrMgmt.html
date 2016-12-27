@@ -55,7 +55,6 @@
 
 	function getAdmin(){
 		request("usrPage", "isAdmin", function(admin){
-			console.log(admin);
 			if(admin == "true")
 			{
 				document.getElementById("dash").style = "display:block";
@@ -69,6 +68,7 @@
 	function getUsers()
 	{
 		request("usrMgr", "totalUsers", function(users){
+			console.log(users);
 			var usrArr = users.split(',');
 			document.getElementById("usrCount").innerHTML = usrArr.length+" users";
 		});
@@ -77,7 +77,6 @@
 	function getAttention()
 	{
 		request("usrPage", "getAttention", function(att){
-			console.log(att);
 			var usrArr = att.split(',');
 			document.getElementById("usrCount2").innerHTML = usrArr.length+" users";
 			if(usrArr[0] == "")

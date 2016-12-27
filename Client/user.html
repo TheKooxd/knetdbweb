@@ -113,6 +113,11 @@
 			document.getElementById("attDiv").style = "display:block";
 			document.getElementById("attDiv").innerHTML = "<h3> Your help request has been saved! </h3><hr> Please wait till admins have time to contact you. We let you know when your attention request is being processed";
 		}
+		if(par.box == "403") {
+			document.getElementById("attDiv").style = "display:block";
+			document.getElementById("attDiv").className += " error";
+			document.getElementById("attDiv").innerHTML = "<p class='Box'><b>YOU DON'T HAVE PERMISSIONS TO SEE THAT PAGE. PERMISSIONS REQUIRED IS "+par.level+"</b></p><p class='Box'>If you think this is an error please contact admin by clicking </span class='glyphicon glyphicon-question-sign' aria-hidden='true'> on upper-right corner. </p>";
+		}
 	}
 
 	function refresh(){

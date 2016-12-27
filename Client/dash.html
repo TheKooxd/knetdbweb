@@ -7,6 +7,7 @@
  	<link rel="stylesheet" type="text/css" href="links.css">
  	<script src="js/normal.js"></script>
  	<script type="text/javascript" src="/lib/lodash.js"></script>
+ 	<script src="/lib/jquery/dist/jquery.js"></script>
  </head>
  <body>
  	<div id="controls">
@@ -21,18 +22,18 @@
  	</div>
  </div>
  <ul class="nav">
- 	<li class="nav active"><a href="user.html">Front Page</a></li>
+ 	<li class="nav"><a href="user.html">Front Page</a></li>
  	<li class="nav"><a href="database.html">Database</a></li>
  	<li class="nav"><a href="usr.html">User Info</a></li>
  	<li class="nav" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
 
- 	<li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
+ 	<li class="nav active" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
  </ul>
  <div id="content">
  	<h2 id="userWelcome"> KNET-DATABASE Operator Dashboard </h2>
  	<hr>
  	<div class="inv-box">
- 		<a href="sysLog.html"><h2>System Log</h2></a>
+ 		<a target="_blank" href="sysLog.html"><h2>System Log</h2></a>
  		<hr>
  		Choose how many lines: 
  		<select id="rowSelector" onchange="getLog()">
@@ -53,20 +54,19 @@
  	<h2>Statistics</h2>
  	<hr>
  	<div class="mini-box">
- 		<h1 id="loggedInUsers" class="mini-box"></h1>
+ 		<h1 id="loggedInUsers" class="mini-box">...</h1>
  		Currently logged in users
  	</div>
  	<div class="mini-box">
- 		<h1 id="totalReq" class="mini-box">0</h1>
- 		Total requests
+ 		<h1 id="totalReq" class="mini-box">...</h1>
+ 		Requests/minute
  	</div>
  	<div class="mini-box">
- 		<h1 id="totalErr" class="mini-box">0</h1>
+ 		<h1 id="totalErr" class="mini-box">...</h1>
  		Total erros logged
  	</div>
  </div>
 </div>
-<script src="/lib/jquery/dist/jquery.js"></script>
 <script type="text/javascript">
 	var api = "http://knet.kcorporation.tk/api";
 	var att;
@@ -81,11 +81,6 @@
 				isAdmin = true;
 			}
 			getLog();
-		});
-	}
-	function getName(){
-		request("usrPage", "usrName", function(name){
-			getAdmin();
 		});
 	}
 	function getLog() {

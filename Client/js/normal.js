@@ -41,9 +41,7 @@
 				callback(data);
 			},
 			error: function(data) {
-				callback(data);
-				
-				
+				errorHandler(data);
 			}
 		});
 	}
@@ -60,9 +58,7 @@
 				callback(data);
 			},
 			error: function(data) {
-				callback(data);
-				
-				
+				errorHandler(data);	
 			}
 		});
 	}
@@ -79,9 +75,7 @@
 				callback(data);
 			},
 			error: function(data) {
-				callback(data);
-				
-				
+				errorHandler(data);	
 			}
 		})
 	}
@@ -98,9 +92,7 @@
 				callback(data);
 			},
 			error: function(data) {
-				callback(data);
-				
-				
+				errorHandler(data);
 			}
 		});
 	}
@@ -117,9 +109,7 @@
 				callback(data);
 			},
 			error: function(data) {
-				callback(data);
-				
-				
+				errorHandler(data);
 			}
 		});
 	}
@@ -136,9 +126,7 @@
 				callback(data);
 			},
 			error: function(data) {
-				callback(data);
-				
-				
+				errorHandler(data);	
 			}
 		});
 	}
@@ -155,9 +143,7 @@
 				callback(data);
 			},
 			error: function(data) {
-				callback(data);
-				
-				
+				errorHandler(data);
 			}
 		});
 	}
@@ -183,5 +169,14 @@
 		else {
 			number = number.substring(0, number.length - 6) + separator + 'milj';
 			return number;
+		}
+	}
+
+	function errorHandler(err, level) {
+		if(err.status == 403) {
+			document.location.href = "user.html?box=403&level="+level;
+		}
+		if(err.status == 503) {
+			document.location.href = "user.html?box=403&level="+level;
 		}
 	}

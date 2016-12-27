@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title> KNET DATABASE LINK </title>
+	<link rel="stylesheet" href="/lib/bootstrap.css">
+	<link rel="stylesheet" type="text/css" href="default.css">
+	<link rel="stylesheet" type="text/css" href="links.css">
+	<script src="js/normal.js"></script>
+	<script type="text/javascript" src="/lib/lodash.js"></script>
+	<script src="/lib/jquery/dist/jquery.js"></script>
+</head>
+<body style="margin:1%; font-family: 'Lucida Console', Monaco, monospace; font-size: 12px;">
+	Update Interval in Seconds: <input type="text" id="refreshInterval" value="1">
+	<br>
+	<input type="checkbox" id="opAdmin" name="filter" value="admin" onclick="getLog()" checked>Show admin messages<br>
+	<input type="checkbox" id="opErr" name="filter" value="err" onclick="getLog()" checked>Show error messages<br>
+	<input type="checkbox" id="opNormal" name="filter" value="normal" onclick="getLog()" checked>Show normal messages<br>
+	<hr>
+</p>
+<div id="log"></div>
+<script type="text/javascript">
+	var api = "http://knet.kcorporation.tk/api";
+	var att;
+	var isAdmin = false;
+	var renderArr = [];
+	function getAdmin(){
+		request("usrPage", "isOp", function(op){
+			if(op == "true")
+			{
+				getLog();
+			}
+		});
+	}
+	function getLog() {
+		request("dashboard", "log", function(log){
+			log = log.split(',');
+			log.forEach(function (line, index){
+				renderArr[index] = line + "<br>";
+				if(index == log.length - 1) {
+					render();
+				}
+			});
+		});
+	}
+	function render() {
+		renderArr = renderArr.filter(parser);
+		document.getElementById('log').innerHTML = renderArr.toString().replace(/,|GMT\+0200 \(EET\)/g, ' ');
+	}
+	function parser(line) {
+		if(document.getElementById('opNormal').checked) {
+			if(line.includes('[ADMIN]') || line.includes('[ERR]')) {
+
+			}
+			else {
+				return line; 				}
+			}
+
+			if(document.getElementById('opAdmin').checked) {
+				if(line.includes('[ADMIN]')) {
+					return line;
+				}
+			}
+
+			if(document.getElementById('opErr').checked) {
+				if(line.includes('[ERR]')) {
+					return line;
+				}
+			}
+
+		}
+
+		function updateDash(){
+			setTimeout(function(){
+				getLog();
+				updateDash();
+			}, document.getElementById('refreshInterval').value * 1000);
+
+		}
+		getAdmin();
+		updateDash();
+	</script>

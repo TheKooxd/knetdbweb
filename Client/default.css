@@ -44,6 +44,7 @@ body.login {
 	border-style: solid;
 	background-color: #ff6666;
 	border-color: #ff3333;
+	text-align: center;
 }
 
 .warning{
