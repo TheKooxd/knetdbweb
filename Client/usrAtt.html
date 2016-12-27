@@ -64,7 +64,7 @@
 			usrArr.forEach(function(usr, index){
 			usrReq("usrPage", "usrInfo", usr, function(att){
 				att = JSON.parse(att);
-				write = write + "<tr id='usrTr'><td><a href='usrInfo.html?usrId="+att.cred.id+"'>"+ att.cred.id +"</a></td></a><td>"+ att.info.name.replace("+", " "); +"</td><td>n/a</td><td>"+att.info.admin+"</td></tr>"
+				write = write + "<tr id='usrTr'><td><a href='usrInfo.html?usrId="+att.id+"'>"+ att.id +"</a></td></a><td>"+ att.name.replace("+", " "); +"</td><td>n/a</td><td>"+att.admin+"</td></tr>"
 				if(index == 0)
 				{
 					render();

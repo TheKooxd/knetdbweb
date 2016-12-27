@@ -65,14 +65,14 @@
 				users.forEach(function(usr){
 					usrReq("usrPage", "usrInfo", usr, function(att){
 						att = JSON.parse(att);
-						att.info.name = att.info.name.replace('+', ' ')
-						if(usr == searchTerm || att.info.email == searchTerm || att.info.gsm == searchTerm)
+						att.name = att.name.replace('+', ' ')
+						if(usr == searchTerm || att.email == searchTerm || att.gsm == searchTerm)
 						{
-							window.location.href = 'usrInfo.html?id=' + att.cred.id;
+							window.location.href = 'usrInfo.html?id=' + att.id;
 						}
-						if(att.info.name == searchTerm )
+						if(att.name == searchTerm )
 						{
-							window.location.href = 'usrInfo.html?id=' + att.cred.id;
+							window.location.href = 'usrInfo.html?id=' + att.id;
 						}
 					});
 				});

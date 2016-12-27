@@ -37,6 +37,9 @@ function decrypt(text, callback){
 }
 function getPar(request, response, next) //Reads URL parameters to object and saves them to global variable "par"
 {
+	client.hget("config", "autoBackup", function(reply) {
+		console.log(reply);
+	});
 	par = request.url.slice(2);
 	par = JSON.parse('{"' + decodeURI(par.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}')
 	usrId = request.session.data.user;
@@ -74,8 +77,8 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 		}
 
 		if(par.request == "log") {
-			getUsrInfo(function(usrCache){
-				if(usrCache.info.operator == "true") {
+			getUsrInfo(usrId, function(usrCache){
+				if(usrCache.operator == "true") {
 					getLog(function (code){
 						resCode = code;
 						next();
@@ -89,8 +92,8 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 		}
 
 		if(par.request == "stats") {
-			getUsrInfo(function(usrCache){
-				if(usrCache.info.operator == "true") {
+			getUsrInfo(usrId, function(usrCache){
+				if(usrCache.operator == "true") {
 					if(par.term == "totalReq")
 					{
 						client.hgetall("req", function(err, reply) {
@@ -210,21 +213,19 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 		{
 			if(par.request == "usrName" || par.request == "usrInfo")
 			{
-				if(par.usrId != undefined)
-				{
-					usrId = par.usrId;
+				if(par.usrId != undefined) {
+					getUsrInfo(par.usrId, function(callback){
+						usrInfo = callback;
+						next();		
+					});
 				}
-				else
-				{
-					usrId = request.session.data.user;
+				else {
+					getUsrInfo(usrId, function(callback){
+						usrInfo = callback;
+						next();		
+					});
 				}
-				getUsrInfo(function(callback){
-					usrInfo = callback;
-					next();
-				}
-				);
 			}
-
 
 			if(par.request == "logout")
 			{
@@ -234,7 +235,7 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 
 			if(par.request == "isAdmin" || par.request == "isOp")
 			{
-				getUsrInfo(function(data){
+				getUsrInfo(usrId, function(data){
 					next();
 				});
 			}
@@ -264,7 +265,7 @@ function getLog(callback) {
 		callback(200);
 	});	
 }
-
+/*
 function getUsrInfo(callback)
 {
 	fs.readFile('cred/'+usrId, 'utf8', function (err, data) {
@@ -285,15 +286,15 @@ function getUsrInfo(callback)
 			var responseCache = usrInfo;
 			if(buUsrId != usrInfo.cred.id) {
 				usrId = buUsrId;
-				/*getUsrInfo(function (checksumUser) {
-					if(checksumUser.info.admin == "true") {*/
-						callback(responseCache);/*
+				getUsrInfo(function (checksumUser) {
+					if(checksumUser.admin == "true") {
+						callback(responseCache);
 					}
 					else {
 						console.log(403)
 						callback(403);
 					}
-				});*/
+				});
 			}
 			if(buUsrId == responseCache.cred.id) {
 				console.log("loopety loop")
@@ -305,11 +306,38 @@ function getUsrInfo(callback)
 			}
 		}
 	});
+}*/
+
+function getUsrInfo(usr, callback) {
+	client.hgetall(usrId, function (err, obj){
+		if(err) {
+			client.incr('totalErr');
+			client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>Couln\'t find user '+usrId);
+			client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>'+err);
+			callback(503);
+		}
+		if(obj.admin == "true" || obj.operator == "true") {
+			client.hgetall(usr, function (err, usrInfo) {
+				if(err) {
+					client.incr('totalErr');
+					client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>Couln\'t find user '+usr);
+					client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>'+err);
+					callback(503);
+				}
+				else {
+					callback(usrInfo);
+				}
+			});
+		}
+		else {
+			callback(403);
+		}
+	});
 }
 
 function getGrpInfo(id, callback)
 {
-	getUsrInfo(function(usr){
+	getUsrInfo(usrId, function(usr){
 		fs.readFile('grp/'+id, 'utf8', function (err, data) {
 			if (err)
 			{
@@ -321,8 +349,8 @@ function getGrpInfo(id, callback)
 			if(data != undefined)
 			{
 				grpInfo = JSON.parse(data);
-				if(usr.info.admin == "true" || grpInfo.info.leader == usr.cred.id) {
-					client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font>User '+buUsrId+' requested group info for group '+grpInfo.info.name);
+				if(usr.admin == "true" || grpInfo.leader == usr.id) {
+					client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font>User '+buUsrId+' requested group info for group '+grpInfo.name);
 					resCode = 200;
 					callback(grpInfo);
 				}
@@ -337,37 +365,36 @@ function getGrpInfo(id, callback)
 
 function changeUsrInfo(term, value, id, callback)
 {
-	getUsrInfo(function(usr){
-		usrId = id;
-		getUsrInfo(function(data){
-			if(usr.info.admin == "true")
+	getUsrInfo(usrId, function(usr){
+		getUsrInfo(id, function(data){
+			if(usr.admin == "true")
 			{
-				client.lpush('log', '['+Date()+'] <font class="err">[ADMIN]</font>User '+buUsrId+' changed '+data.info.name+'\'s '+term+' to '+value);
+				client.lpush('log', '['+Date()+'] <font class="err">[ADMIN]</font>User '+buUsrId+' changed '+data.name+'\'s '+term+' to '+value);
 				if(term == 'admin')
 				{
-					data.info.admin = value;
+					data.admin = value;
 				}
 				if(term == 'id')
 				{
-					data.cred.id = value;
+					data.id = value;
 					id = value;
 				}
 				if(term == 'group')
 				{
-					data.info.group = value;
+					data.group = value;
 				}
 				if(term == 'email')
 				{
 					value = value.replace(/%40/g, "@");
-					data.info.email = value;
+					data.email = value;
 				}
 				if(term == 'gsm')
 				{
-					data.info.gsm = value;
+					data.gsm = value;
 				}
 				if(term == "attention")
 				{
-					data.info.attention = value;
+					data.attention = value;
 				}
 
 				if(term == "attentionResponse")
@@ -375,26 +402,26 @@ function changeUsrInfo(term, value, id, callback)
 					if(value != undefined) {
 						value = value.replace(/%3F/g, "?");
 					}
-					data.info.attentionResponse = value;
+					data.attentionResponse = value;
 				}
 
 
 				if(term == "staff")
 				{
-					data.info.staff = value;
+					data.staff = value;
 				}
 
 				if(term == "user")
 				{
-					data.info.user = value;
+					data.user = value;
 				}
 
 				if(term == "operator")
 				{
-					data.info.operator = value;
+					data.operator = value;
 				}
 
-				jsonfile.writeFile("cred/"+id, data, function(err){
+				client.HSET(id, term, value, function(err){
 					if(err)
 					{
 						client.incr('totalErr');
@@ -412,33 +439,33 @@ function changeUsrInfo(term, value, id, callback)
 
 function changeGrpInfo(term, value, id, callback)
 {
-	getUsrInfo(function(usr){
+	getUsrInfo(usrId, function(usr){
 		getGrpInfo(id, function(data){
-			if(usr.info.admin == "true")
+			if(usr.admin == "true")
 			{
 				if(term == 'description')
 				{
-					data.info.description = value;
+					data.description = value;
 				}
 				if(term == 'gsm')
 				{
-					data.info.gsm = value;
+					data.gsm = value;
 				}
 				if(term == 'leader')
 				{
-					data.info.leader = value;
+					data.leader = value;
 				}
 				if(term == 'location')
 				{
-					data.info.location = value;
+					data.location = value;
 				}
 				if(term == 'name')
 				{
-					data.info.name = value;
+					data.name = value;
 				}
 				if(term == "attention")
 				{
-					data.info.attention = value;
+					data.attention = value;
 				}
 
 				jsonfile.writeFile("grp/"+id, data, function(err){
@@ -458,26 +485,25 @@ function changeGrpInfo(term, value, id, callback)
 
 function checkLogin(callback) //Needs somekind of lock function for encryptor but not big deal yet
 {
-	fs.readFile('cred/'+par.id, 'utf8', function (err, data) {
+	client.hgetall(par.id, function(err, usrInfo){
 		if (err) {
 			client.incr('totalErr');
 			client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>System tried access "/cred" but FS gave error: '+err);
 			callback(403)
 		}
-		if(data != undefined)
+		if(usrInfo != undefined)
 		{
-			usrInfo = JSON.parse(data);
 			encrypt(par.pass, function(usrPass){
-				if(usrPass == usrInfo.cred.pass && usrInfo.info.user == "true")
+				if(usrPass == usrInfo.pass && usrInfo.user == "true")
 				{
 					callback(200);
 				}
 				else
 				{
-					if(usrInfo.info.user != "true")
+					if(usrInfo.user != "true")
 					{
 						callback(410);
-						console.log(usrInfo.info.name + " tried to log in with disabled account!")
+						console.log(usrInfo.name + " tried to log in with disabled account!")
 					}
 					callback(403);
 					console.log(par.id+" had wrong password")
@@ -500,19 +526,18 @@ function toArray(data, callback)
 
 function getUsrs(callback)
 {
-
-	getUsrInfo(function(reqUsr){
-		if(reqUsr.info != undefined)
+	getUsrInfo(usrId, function(reqUsr){
+		if(reqUsr != undefined)
 		{
-			console.log(reqUsr.info.admin);
-			if(reqUsr.info.admin == "true")
+			if(reqUsr.admin == "true")
 			{
-				fs.readdir("cred/", function (err, files) {
+				client.lrange("users", 0, -1, function(err, files) {
 					if (err) {
 						client.incr('totalErr');
 						client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' tried to list all the users but couldn\'t reach it');
 					}
 					client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font> User '+buUsrId+' listed all users in system. Result was '+files.length);
+					console.log(files);
 					callback(files)
 				});
 			}
@@ -531,10 +556,10 @@ function getUsrs(callback)
 function getGrp(callback)
 {
 
-	getUsrInfo(function(reqUsr){
-		if(reqUsr.info != undefined)
+	getUsrInfo(usrId, function(reqUsr){
+		if(reqUsr != undefined)
 		{
-			if(reqUsr.info.admin == "true")
+			if(reqUsr.admin == "true")
 			{
 				fs.readdir("grp/", function (err, files) {
 					if (err) {
@@ -559,46 +584,19 @@ function getGrp(callback)
 
 function crtUsr(callback)
 {
-
-	getUsrInfo(function(reqUsr){
+	getUsrInfo(usrId, function(reqUsr){
 		encrypt(par.pass, function(pass){
-			if(reqUsr.info.admin == "true")
+			if(reqUsr.admin == "true")
 			{
-				var usr = {
-					"cred" : {
-						"id": par.id,
-						"pass": pass
-					},
-					"info" : {
-						"name": par.name,
-						"gsm": par.gsm,
-						"email": par.email,
-						"admin": par.admin,
-						"attention": "false",
-						"user": "true",
-						"staff": par.staff,
-						"operator": par.op
-					}
-				};
-				usr.info.name = par.name;
-				usr.cred.id = par.id;
-				usr.info.admin = par.admin;
-
-				usr.cred.pass = pass;
-				usr.info.gsm = par.gsm;
-				usr.info.email = par.gsm;
-				jsonfile.writeFile("cred/"+par.id, usr, function(err){
-					if(err)
-					{
-						client.incr('totalErr');
-						client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' tried to create user but couldn\'t do that it');
-					}
-					else{
-						client.lpush('log', '['+Date()+'] <font class="err">[ADMIN]</font> User '+buUsrId+' Created new user account '+usr.cred.id+' for '+usr.info.name);
-						callback(200);
-					}
-				});
-
+				client.hset(par.id, "name", par.name);
+				client.hset(par.id, "id", par.id);
+				client.hset(par.id, "admin", par.admin);
+				client.hset(par.id, "pass", pass);
+				client.hset(par.id, "gsm", par.gsm);
+				client.hset(par.id, "email", par.email);
+				client.rpush("users", par.id);
+				client.lpush('log', '['+Date()+'] <font class="err">[ADMIN]</font> User '+buUsrId+' Created new user account '+par.id+' for '+par.name);
+				callback(200);
 			}
 			else
 			{
@@ -610,11 +608,10 @@ function crtUsr(callback)
 
 function crtGrp(callback)
 {
-	getUsrInfo(function(reqUsr){
+	getUsrInfo(usrId, function(reqUsr){
 		getGrp(function(id){
-			if(reqUsr.info.admin == "true")
+			if(reqUsr.admin == "true")
 			{
-				console.log(par.name);
 				id.length++;
 				var grp = {
 					"info" : {
@@ -632,7 +629,7 @@ function crtGrp(callback)
 						client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' tried to create new group but couldn\'t do that');
 					}
 					else{
-						client.lpush('log', '['+Date()+'] <font class="err">[ADMIN]</font> User '+buUsrId+' Created new group '+grp.info.id+' for '+grp.info.name);
+						client.lpush('log', '['+Date()+'] <font class="err">[ADMIN]</font> User '+buUsrId+' Created new group '+grp.id+' for '+grp.name);
 						callback(200);
 					}
 				});
@@ -648,24 +645,15 @@ function crtGrp(callback)
 
 function setAttention(callback)
 {
-	getUsrInfo(function(code){
+	getUsrInfo(usrId, function(code){
 		if(code!=403)
 		{
+			usrInfo = code;
 			client.lpush('log', '['+Date()+'] User '+buUsrId+' set attention request.');
-			usrInfo.info.attention = "true";
-			usrInfo.info.attentionReason = par.comment.replace(/%3F/g, "?");
-			usrInfo.info.attentionResponse = undefined;
-			jsonfile.writeFile("cred/"+usrInfo.cred.id, usrInfo, function(err){
-				if(err)
-				{
-					client.incr('totalErr');
-					client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' tried to set attention but FS gave error');
-				}
-				else{
-					callback(200);
-				}
-			});
-
+			client.hset(usrId, "attention", "true")
+			client.hset(usrId, "attentionReason", par.comment.replace(/%3F/g, "?"))
+			client.hset(usrId, "attentionResponse", "undefined")
+			callback(200);
 		}
 	});
 }
@@ -673,19 +661,18 @@ function setAttention(callback)
 function getAttention(callback)
 {
 	var res1 = [];
-	getUsrInfo(function(reqUsr){
-		if(reqUsr.info.admin == "true")
+	getUsrInfo(usrId, function(reqUsr){
+		if(reqUsr.admin == "true")
 		{
 			client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font>User '+buUsrId+' is reading attentions.');
 			var usrCache;
 			getUsrs(function(users){
 				var index = 1;
 				users.forEach(function(user){
-					fs.readFile('cred/'+user, 'utf8', function (err, data) {
-						usrCache = JSON.parse(data);
-						if(usrCache.info.attention == "true" && usrCache.cred.id != usrId)
+					getUsrInfo(user, function (usrCache) {
+						if(usrCache.attention == "true" && usrCache.id != usrId)
 						{
-							res1.push(usrCache.cred.id);
+							res1.push(usrCache.id);
 
 						}
 						if(index == users.length)
@@ -711,11 +698,10 @@ function getAttention(callback)
 function userArr(user, callback)
 {
 	var res1 = [];
-	fs.readFile('cred/'+user, 'utf8', function (err, data) {
-		usrCache = JSON.parse(data);
-		if(usrCache.info.attention == "true")
+	getUsrInfo(user, function (data) {
+		if(usrCache.attention == "true")
 		{
-			res1.push(usrCache.cred.id);
+			res1.push(usrCache.id);
 
 		}
 		callback(res1);
@@ -735,9 +721,9 @@ function responder(request, response, next)
 	}
 	if(par.origin == "usrPage" && par.request == "usrName")
 	{
-		client.lpush('log', '['+Date()+'] User '+request.session.data.user+' requested name. Responded with '+usrInfo.info.name);
+		client.lpush('log', '['+Date()+'] User '+request.session.data.user+' requested name. Responded with '+usrInfo.name);
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
-		response.write(usrInfo.info.name);
+		response.write(usrInfo.name);
 		resCode = 200;
 		next();
 	}
@@ -784,14 +770,14 @@ function responder(request, response, next)
 	if(par.origin == "usrPage" && par.request == "isAdmin")
 	{
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
-		response.write(usrInfo.info.admin);
+		response.write(usrInfo.admin);
 		resCode = 200;
 		next();
 	}
 	if(par.origin == "usrPage" && par.request == "isOp")
 	{
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
-		response.write(usrInfo.info.operator);
+		response.write(usrInfo.operator);
 		resCode = 200;
 		next();
 	}

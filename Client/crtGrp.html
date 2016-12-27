@@ -84,7 +84,7 @@
 			usrArr.forEach(function(usr){
 				usrReq("usrPage", "usrInfo", usr, function(att){
 					att = JSON.parse(att);
-					write = write + "<option value='"+ att.cred.id +"'> "+att.info.name.replace(/\+/g, " ") +" ("+att.cred.id+")";
+					write = write + "<option value='"+ att.id +"'> "+att.name.replace(/\+/g, " ") +" ("+att.id+")";
 					index--;
 					if(index == 0)
 					{

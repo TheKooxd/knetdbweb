@@ -95,14 +95,14 @@
  			request("usrPage", "usrInfo", function(usrCall){
  				att = JSON.parse(arr);
  				usr = JSON.parse(usrCall);
- 				document.getElementById("userWelcome").innerHTML = "Group Information for: "+att.info.name.replace("+", " ");
- 				document.getElementById("id").value = att.info.id;
- 				document.getElementById("location").value = att.info.location.replace(/%2F/g, '/');
- 				document.getElementById("gsm").value = att.info.gsm;
- 				document.getElementById("leader").value = att.info.leader;
- 				document.getElementById("description").value = att.info.description
+ 				document.getElementById("userWelcome").innerHTML = "Group Information for: "+att.name.replace("+", " ");
+ 				document.getElementById("id").value = att.id;
+ 				document.getElementById("location").value = att.location.replace(/%2F/g, '/');
+ 				document.getElementById("gsm").value = att.gsm;
+ 				document.getElementById("leader").value = att.leader;
+ 				document.getElementById("description").value = att.description
  				console.log("usr");
- 				if(usr.cred.id == att.info.leader)
+ 				if(usr.id == att.leader)
  				{
  					document.getElementById("id").disabled = false;
  					document.getElementById("gsm").disabled = false;
@@ -111,31 +111,31 @@
  					document.getElementById("description").disabled = false;
  				}
 
- 				if(att.info.admin == "true")
+ 				if(att.admin == "true")
  				{
  					document.getElementById("admin").className = "btn btn-warning active";
  					document.getElementById("admin").value = "ADMIN";
  				}
- 				if(att.info.operator == "true")
+ 				if(att.operator == "true")
  				{
  					document.getElementById("op").className = "btn btn-danger active";
  					document.getElementById("op").value = "OPERATOR";
  				}
- 				if(att.info.staff == "true")
+ 				if(att.staff == "true")
  				{
  					document.getElementById("staff").className = "btn btn-info active";
  					document.getElementById("staff").value = "STAFF";
  				}
- 				if(att.info.user == "true")
+ 				if(att.user == "true")
  				{
  					document.getElementById("user").className = "btn btn-Success active";
  					document.getElementById("user").value = "USER";
  				}
- 				if(att.info.attention == "true")
+ 				if(att.attention == "true")
  				{
  					document.getElementById('attDiv').style = "display:inline";
  					document.getElementById('attentionMsg').disabled = false;
- 					document.getElementById('attentionMsg').value = att.info.attentionReason.replace(/\+/g, " ");
+ 					document.getElementById('attentionMsg').value = att.attentionReason.replace(/\+/g, " ");
  				}
  				getMembers();
  			});
@@ -150,9 +150,9 @@
  			usrArr.forEach(function(usr){
  				usrReq("usrPage", "usrInfo", usr, function(usrInfo){
  					usrInfo = JSON.parse(usrInfo);
- 					if(usrInfo.info.group == att.info.name)
+ 					if(usrInfo.group == att.name)
  					{
- 						write = write + "<tr id='grpTr'><td><a href='usrInfo.html?usrId="+usrInfo.cred.id+"'>"+ usrInfo.cred.id +"</a></td></a><td>"+ usrInfo.info.name.replace('+', ' ') +"</td><td>n/a</td></tr>"
+ 						write = write + "<tr id='grpTr'><td><a href='usrInfo.html?usrId="+usrInfo.id+"'>"+ usrInfo.id +"</a></td></a><td>"+ usrInfo.name.replace('+', ' ') +"</td><td>n/a</td></tr>"
  					}
  					index--;
  					if(index == 0)
@@ -178,7 +178,7 @@
 
  	function removeAtt()
  	{
- 		changeUsrInfo("attention", "false", att.cred.id, function(status){
+ 		changeUsrInfo("attention", "false", att.id, function(status){
  			window.location.reload();
  		});
  	}
@@ -190,10 +190,10 @@
 
  	function sendResponse()
  	{
- 		changeUsrInfo("attentionResponse", document.getElementById('answerText').value, att.cred.id, function(status){
+ 		changeUsrInfo("attentionResponse", document.getElementById('answerText').value, att.id, function(status){
  			if(!document.getElementById("keepAttention").checked)
  			{
- 				changeUsrInfo("attention", "false", att.cred.id, function(status){
+ 				changeUsrInfo("attention", "false", att.id, function(status){
 
  				});
  			}
@@ -203,11 +203,11 @@
 
  	function saveGeneral()
  	{
- 		changeGrpInfo("id", document.getElementById('id').value, att.info.id, function(status){
- 			changeGrpInfo("location", document.getElementById("location").value, att.info.id, function(status){
- 				changeGrpInfo("leader", document.getElementById("leader").value, att.info.id, function(status){
- 					changeGrpInfo("gsm", document.getElementById("gsm").value, att.info.id, function(status){
- 						changeGrpInfo("description", document.getElementById("description").value, att.info.id, function(status){
+ 		changeGrpInfo("id", document.getElementById('id').value, att.id, function(status){
+ 			changeGrpInfo("location", document.getElementById("location").value, att.id, function(status){
+ 				changeGrpInfo("leader", document.getElementById("leader").value, att.id, function(status){
+ 					changeGrpInfo("gsm", document.getElementById("gsm").value, att.id, function(status){
+ 						changeGrpInfo("description", document.getElementById("description").value, att.id, function(status){
  							window.location.reload();
  						});
  					});

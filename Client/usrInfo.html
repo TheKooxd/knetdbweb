@@ -104,11 +104,11 @@
 		usrReq("usrPage", "usrInfo", par.usrId, function(arr){
 
 			att = JSON.parse(arr);
-			document.getElementById("userWelcome").innerHTML = "User Information for: "+att.info.name.replace("+", " "); + " ("+att.cred.id+")"; 
-			document.getElementById("id").value = att.cred.id;
-			document.getElementById("email").value = att.info.email;
-			document.getElementById("gsm").value = att.info.gsm;
-			document.getElementById("path").innerHTML = locPath + "(" + att.cred.id + ")";
+			document.getElementById("userWelcome").innerHTML = "User Information for: "+att.name.replace("+", " "); + " ("+att.id+")"; 
+			document.getElementById("id").value = att.id;
+			document.getElementById("email").value = att.email;
+			document.getElementById("gsm").value = att.gsm;
+			document.getElementById("path").innerHTML = locPath + "(" + att.id + ")";
 			console.log("usr");
 			if(adminStatus)
 			{
@@ -117,31 +117,31 @@
 				document.getElementById("gsm").disabled = false;
 			}
 
-			if(att.info.admin == "true")
+			if(att.admin == "true")
 			{
 				document.getElementById("admin").className = "btn btn-warning active";
 				document.getElementById("admin").value = "ADMIN";
 			}
-			if(att.info.operator == "true")
+			if(att.operator == "true")
 			{
 				document.getElementById("op").className = "btn btn-danger active";
 				document.getElementById("op").value = "OPERATOR";
 			}
-			if(att.info.staff == "true")
+			if(att.staff == "true")
 			{
 				document.getElementById("staff").className = "btn btn-info active";
 				document.getElementById("staff").value = "STAFF";
 			}
-			if(att.info.user == "true")
+			if(att.user == "true")
 			{
 				document.getElementById("user").className = "btn btn-Success active";
 				document.getElementById("user").value = "USER";
 			}
-			if(att.info.attention == "true")
+			if(att.attention == "true")
 			{
 				document.getElementById('attDiv').style = "display:inline";
 				document.getElementById('attentionMsg').disabled = false;
-				document.getElementById('attentionMsg').value = att.info.attentionReason.replace(/\+/g, " ");
+				document.getElementById('attentionMsg').value = att.attentionReason.replace(/\+/g, " ");
 			}
 			getGroup();
 		});
@@ -151,13 +151,12 @@
 	{
 		request("grpMgr", "totalGroups", function(grp){
 			var grpArr = grp.split(',');
-			console.log(grpArr);
 			var index = grpArr.length;
 			grpArr.forEach(function(grp){
 				grpReq("grpMgr", "grpInfo", grp, function(grpInfo){
 					grpInfo = JSON.parse(grpInfo);
-					grpInfo.info.name = grpInfo.info.name.replace(/\+/g, ' ');
-					if(att.info.group == grpInfo.info.name)
+					grpInfo.name = grpInfo.info.name.replace(/\+/g, ' ');
+					if(att.group == grpInfo.info.name)
 					{
 						write = write + "<option selected='selected' value='"+grpInfo.info.name+"'>"+grpInfo.info.name+"</option>"
 
@@ -169,7 +168,7 @@
 					index--;
 					if(index == 0)
 					{
-						if(att.info.group == undefined || att.info.group == "na")
+						if(att.group == undefined || att.group == "na")
 						{
 							write = write + "<option selected='selected' value='na'>No Group Assigned</option>"
 						}
@@ -189,7 +188,7 @@
 
 		getState(type, function(state){
 			console.log(state);
-			changeUsrInfo(type, state, att.cred.id, function(status){
+			changeUsrInfo(type, state, att.id, function(status){
 				window.location.reload();
 			});
 			console.log(state);
@@ -200,7 +199,7 @@
 	{
 		if(type == "admin")
 		{
-			if(att.info.admin == "true")
+			if(att.admin == "true")
 			{
 				callback(false)
 			}
@@ -212,7 +211,7 @@
 
 		if(type == "user")
 		{
-			if(att.info.user == "true")
+			if(att.user == "true")
 			{
 				callback(false)
 			}
@@ -224,7 +223,7 @@
 
 		if(type == "operator")
 		{
-			if(att.info.operator == "true")
+			if(att.operator == "true")
 			{
 				callback(false)
 			}
@@ -236,7 +235,7 @@
 
 		if(type == "staff")
 		{
-			if(att.info.staff == "true")
+			if(att.staff == "true")
 			{
 				callback(false)
 			}
@@ -257,7 +256,7 @@
 
 	function removeAtt()
 	{
-		changeUsrInfo("attention", "false", att.cred.id, function(status){
+		changeUsrInfo("attention", "false", att.id, function(status){
 			window.location.reload();
 		});
 	}
@@ -269,10 +268,10 @@
 
 	function sendResponse()
 	{
-		changeUsrInfo("attentionResponse", JSON.stringify(document.getElementById('answerText').value).replace(/"/g, ""), att.cred.id, function(status){
+		changeUsrInfo("attentionResponse", JSON.stringify(document.getElementById('answerText').value).replace(/"/g, ""), att.id, function(status){
 			if(!document.getElementById("keepAttention").checked)
 			{
-				changeUsrInfo("attention", "false", att.cred.id, function(status){
+				changeUsrInfo("attention", "false", att.id, function(status){
 
 				});
 			}
@@ -282,10 +281,10 @@
 
 	function saveGeneral()
 	{
-		changeUsrInfo("id", document.getElementById('id').value, att.cred.id, function(status){
-			changeUsrInfo("email", document.getElementById("email").value, att.cred.id, function(status){
-				changeUsrInfo("gsm", document.getElementById("gsm").value, att.cred.id, function(status){
-					changeUsrInfo("group", document.getElementById("group").value, att.cred.id, function(status){
+		changeUsrInfo("id", document.getElementById('id').value, att.id, function(status){
+			changeUsrInfo("email", document.getElementById("email").value, att.id, function(status){
+				changeUsrInfo("gsm", document.getElementById("gsm").value, att.id, function(status){
+					changeUsrInfo("group", document.getElementById("group").value, att.id, function(status){
 						window.location.reload();
 					});
 				});

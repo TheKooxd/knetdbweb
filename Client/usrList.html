@@ -66,10 +66,10 @@
 			usrArr.forEach(function(usr){
 				usrReq("usrPage", "usrInfo", usr, function(att){
 					att = JSON.parse(att);
-					if(att.info.user == "true") {
-						att.info.user = "<b class='highlight'>TRUE</b>"
+					if(att.user == "true") {
+						att.user = "<b class='highlight'>TRUE</b>"
 					}
-					write = write + "<tr id='usrTr'><td><a href='usrInfo.html?usrId="+att.cred.id+"'>"+ att.cred.id +"</a></td></a><td>"+ att.info.name.replace('+', ' ') +"</td><td>"+ att.info.group +"</td><td>"+att.info.user+"</td></tr>"
+					write = write + "<tr id='usrTr'><td><a href='usrInfo.html?usrId="+att.id+"'>"+ att.id +"</a></td></a><td>"+ att.name.replace('+', ' ') +"</td><td>"+ att.group +"</td><td>"+att.user+"</td></tr>"
 					console.log("current User: "+usr);
 					console.log("current Index: "+index);
 					index--;

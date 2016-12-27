@@ -71,7 +71,7 @@
 				grpReq("grpMgr", "grpInfo", grp, function(grpInfo){
 					att = JSON.parse(grpInfo);
 					console.log(att);
-					write = write + "<tr id='usrTr'><td><a href='grpInfo.html?grpId="+att.info.id+"'>"+ att.info.id +"</a></td></a><td>"+ att.info.name.replace('+', ' ' || /%2F/g, '/') +"</td><td><a href='usrInfo.html?usrId="+att.info.leader+"'>"+att.info.leader+"</a></td><td>"+att.info.location.replace(/%2F/g, '/')+"</td></tr>"
+					write = write + "<tr id='usrTr'><td><a href='grpInfo.html?grpId="+att.id+"'>"+ att.id +"</a></td></a><td>"+ att.name.replace('+', ' ' || /%2F/g, '/') +"</td><td><a href='usrInfo.html?usrId="+att.leader+"'>"+att.leader+"</a></td><td>"+att.location.replace(/%2F/g, '/')+"</td></tr>"
 					index--;
 					if(index == 0)
 					{

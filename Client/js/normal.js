@@ -176,7 +176,4 @@
 		if(err.status == 403) {
 			document.location.href = "user.html?box=403&level="+level;
 		}
-		if(err.status == 503) {
-			document.location.href = "user.html?box=403&level="+level;
-		}
 	}

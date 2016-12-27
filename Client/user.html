@@ -82,10 +82,10 @@
 
 			}
 			document.getElementById("response").style = "display:none"
-			if( att.info.attentionResponse != undefined)
+			if(att.attentionResponse != "undefined")
 			{
 				document.getElementById("response").style = "display:inline"
-				document.getElementById("response").innerHTML = "<h3> Admin Response to your attention request: </h3><hr> "+att.info.attentionResponse.replace(/\+/g, " ") + "<br><br><input id='removeResponse' type='button' class='btn btn-info' value='Remove reponse' onclick='removeResponse()'> <input id='answerResponse' type='button' class='btn btn-Primary active' value='Answer reponse' onclick='help()'>";
+				document.getElementById("response").innerHTML = "<h3> Admin Response to your attention request: </h3><hr> "+att.attentionResponse.replace(/\+/g, " ") + "<br><br><input id='removeResponse' type='button' class='btn btn-info' value='Remove reponse' onclick='removeResponse()'> <input id='answerResponse' type='button' class='btn btn-Primary active' value='Answer reponse' onclick='help()'>";
 			}
 		});
 
@@ -93,7 +93,7 @@
 
 	function removeResponse()
 	{
-		changeUsrInfo("attentionResponse", undefined, att.cred.id, function(status){
+		changeUsrInfo("attentionResponse", "undefined", att.id, function(status){
 			window.location.reload();
 		});
 	}
