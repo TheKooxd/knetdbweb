@@ -7,6 +7,7 @@ var session = require('./node_modules/sesh/lib/core').magicSession();
 var redis = require("redis"),
 client = redis.createClient();
 var _ = require('lodash');
+var mkdirp = require('mkdirp');
 
 var crypto = require('crypto'),
 algorithm = 'aes-256-ctr',
@@ -37,8 +38,20 @@ function decrypt(text, callback){
 }
 function getPar(request, response, next) //Reads URL parameters to object and saves them to global variable "par"
 {
-	client.hget("config", "autoBackup", function(reply) {
-		console.log(reply);
+	client.hget("config", "autoBackupInterval", function(err, reply) {
+		if(reply != "null") {
+			client.hget("config", "latestBackup", function(err, latest){
+				var d = new Date();
+				console.log(d.getTime()/60000)
+				console.log(latest + reply);
+				console.log(reply);
+				if(Number(latest) + Number(reply) < d.getTime()/60000) {
+					backupCache(function(status){
+						client.hset("config", "latestBackup", d.getTime()/60000)
+					})
+				}
+			});
+		}
 	});
 	par = request.url.slice(2);
 	par = JSON.parse('{"' + decodeURI(par.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}')
@@ -707,6 +720,29 @@ function userArr(user, callback)
 		callback(res1);
 	});
 
+}
+
+function backupCache(callback) {
+	client.lrange("users", 0, -1, function(err, userList){
+		if(err) {
+			console.log(err);
+		}
+		var time = Date();
+		mkdirp('backup/'+time+'/', function(err) { 
+			if(err) {
+				console.log(err);
+			}
+			jsonfile.writeFile("backup/"+time+"/userList", userList, function(err){
+				userList.forEach(function(user){
+					client.hgetall(user, function(err, userInfo){
+						jsonfile.writeFile("backup/"+time+"/user"+userInfo.id, userInfo, function(err){
+						});
+					});
+				});
+			});
+		});
+	});
+	callback(200);
 }
 
 function responder(request, response, next)
