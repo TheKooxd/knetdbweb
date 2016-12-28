@@ -10,236 +10,242 @@
  	<script src="/lib/bootstrap.js"></script>
  </head>
  <body>
- 	<div id="controls">
- 		<button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
- 			<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
- 		</button>
- 		<input type="button" class="btn btn-danger" value="logout" onclick="logout()">
- 	</div>
- 	<div id="header">
- 		<h1>\\KNET DATABASE></h1>
-
- 		<h7 id="path" class="locText">\\DATABASE\\USER_MANAGMENT\USER_OVERVIEW\USER_LIST\USER_INFO</h7>
- 	</div>
- 	<ul class="nav">
- 		<li class="nav"><a href="user.html">Front Page</a></li>
- 		<li class="nav"><a href="database.html">Database</a></li>
- 		<li class="nav active"><a href="usr.html">User Info</a></li>
- 		<li class="nav" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
- 		<li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
- 	</ul>
- 	<div id="content">
- 		<h2 id="userWelcome"> Crunching Data </h2>
- 		<hr>
- 		<div class="inv-box">
- 			<h3>General Information</h3>
- 			<hr>
- 			ID: <input type="text" disabled="" id="id"> <br><br>
- 			E-Mail: <input type="text" disabled="" id="email"> <br> <br>
- 			GSM: <input type="text" disabled="" id="gsm"> <br> <br>
- 			<input id="generalSaveBtt" type='button' class='btn btn-success' value='Save'  onclick="saveGeneral()">
+ 	<div class="container fixed-margin">
+ 		<div class="col-md-12">
+ 			<div id="controls">
+ 				<button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
+ 					<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+ 				</button>
+ 				<input type="button" class="btn btn-danger" value="logout" onclick="logout()">
+ 			</div>
  		</div>
- 		<div class="inv-box">
- 			<h3>Medals</h3>
- 			<hr>
- 			<input id="admin" type='button' class='btn btn-warning disabled' value='Not Admin' onclick="set('admin')">
- 			<input id="op" type='button' class='btn btn-danger disabled' value='Not Operator' onclick="set('operator')">
- 			<input id="staff" type='button' class='btn btn-info disabled' value='Not Staff' onclick="set('staff')">
- 			<input id="user" type='button' class='btn btn-Success disabled' value='Not User' onclick="set('user')">
- 		</div>
- 		<div id="attDiv" class="inv-box" style="display:none">
- 			<h3>Attention notice from user </h3>
- 			<hr>
- 			<textarea rows="4" cols="50" id="attentionMsg" disabled="true" value="No attention needed.">
- 			</textarea>
- 			<input id="answerAttBtt" type='button' class='btn btn-info' value='Answer the attention' onclick="openAttResponse()">
- 			<input id="removeAttBtt" type='button' class='btn btn-warning' value='Set As Done' onclick="removeAttForce()">
- 			<input id="forceRmvBtt" type='button' class='btn btn-danger' style="display:none" value='Remove Any Way' onclick="removeAtt()">
- 		</div>
- 		<div class="inv-box"></div>
- 		<div class="inv-box"></div>
- 		<div id="responseDiv" class="inv-box" style="display:none">
- 			<h3>Write Response </h3>
- 			<textarea rows="4" cols="50" id="answerText" form="answerForm" placeholder="Enter text here..."></textarea>
- 			Keep attention on: <input type="checkbox" id="keepAttention" checked="true"><br>
- 			<input id="answerAttBtt" type='button' class='btn btn-success' value='Send response' onclick="sendResponse()">
- 		</div>
- 	</div>
- </body>
- <script type="text/javascript">
- 	var att;
- 	var locPath = "<div class = 'wrapper'><a class = 'cool third after' href='user.html'>\\\DATABASE</a><a class = 'cool third after' href = 'usrMgmt.html'>\\\USER_MANAGMENT</a><a class = 'cool third after' href = 'usrMgmt.html'>\\USER_OVERVIEW</a><a class = 'cool third after' href = 'usrList.html'>\\USER_LIST</a>\\USER_INFO";
- 	var request;
- 	var adminStatus;
- 	var api = "http://knet.kcorporation.tk/api";
- 	var write = "<tr id='usrTr'><th>ID</th><th>Name</th><th>Creation date</th><th>Admin</th></tr>";
- 	var usrName;
- 	function getAdmin(){
- 		request("usrPage", "isAdmin", function(admin){
- 			adminStatus = admin;
- 			if(admin == "true")
+ 		<div class="col-md-12">
+ 			<div id="header">
+ 				<h1>\\KNET DATABASE></h1>
+
+ 				<h7 id="path" class="locText">\\DATABASE\\USER_MANAGMENT\USER_OVERVIEW\USER_LIST\USER_INFO</h7>
+ 			</div>
+ 			<div class="col-md-2">
+ 				<ul class="nav well">
+ 					<li class="nav"><a href="user.html">Front Page</a></li>
+ 					<li class="nav"><a href="database.html">Database</a></li>
+ 					<li class="nav active"><a href="usr.html">User Info</a></li>
+ 					<li class="nav" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
+ 					<li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
+ 				</ul>
+ 			</div>
+ 			<div id="content">
+ 				<h2 id="userWelcome"> Crunching Data </h2>
+ 				<hr>
+ 				<div class="inv-box">
+ 					<h3>General Information</h3>
+ 					<hr>
+ 					ID: <input type="text" disabled="" id="id"> <br><br>
+ 					E-Mail: <input type="text" disabled="" id="email"> <br> <br>
+ 					GSM: <input type="text" disabled="" id="gsm"> <br> <br>
+ 					<input id="generalSaveBtt" type='button' class='btn btn-success' value='Save'  onclick="saveGeneral()">
+ 				</div>
+ 				<div class="inv-box">
+ 					<h3>Medals</h3>
+ 					<hr>
+ 					<input id="admin" type='button' class='btn btn-warning disabled' value='Not Admin' onclick="set('admin')">
+ 					<input id="op" type='button' class='btn btn-danger disabled' value='Not Operator' onclick="set('operator')">
+ 					<input id="staff" type='button' class='btn btn-info disabled' value='Not Staff' onclick="set('staff')">
+ 					<input id="user" type='button' class='btn btn-Success disabled' value='Not User' onclick="set('user')">
+ 				</div>
+ 				<div id="attDiv" class="inv-box" style="display:none">
+ 					<h3>Attention notice from user </h3>
+ 					<hr>
+ 					<textarea rows="4" cols="50" id="attentionMsg" disabled="true" value="No attention needed.">
+ 					</textarea>
+ 					<input id="answerAttBtt" type='button' class='btn btn-info' value='Answer the attention' onclick="openAttResponse()">
+ 					<input id="removeAttBtt" type='button' class='btn btn-warning' value='Set As Done' onclick="removeAttForce()">
+ 					<input id="forceRmvBtt" type='button' class='btn btn-danger' style="display:none" value='Remove Any Way' onclick="removeAtt()">
+ 				</div>
+ 				<div class="inv-box"></div>
+ 				<div class="inv-box"></div>
+ 				<div id="responseDiv" class="inv-box" style="display:none">
+ 					<h3>Write Response </h3>
+ 					<textarea rows="4" cols="50" id="answerText" form="answerForm" placeholder="Enter text here..."></textarea>
+ 					Keep attention on: <input type="checkbox" id="keepAttention" checked="true"><br>
+ 					<input id="answerAttBtt" type='button' class='btn btn-success' value='Send response' onclick="sendResponse()">
+ 				</div>
+ 			</div>
+ 		</body>
+ 		<script type="text/javascript">
+ 			var att;
+ 			var locPath = "<div class = 'wrapper'><a class = 'cool third after' href='user.html'>\\\DATABASE</a><a class = 'cool third after' href = 'usrMgmt.html'>\\\USER_MANAGMENT</a><a class = 'cool third after' href = 'usrMgmt.html'>\\USER_OVERVIEW</a><a class = 'cool third after' href = 'usrList.html'>\\USER_LIST</a>\\USER_INFO";
+ 			var request;
+ 			var adminStatus;
+ 			var api = "http://knet.kcorporation.tk/api";
+ 			var write = "<tr id='usrTr'><th>ID</th><th>Name</th><th>Creation date</th><th>Admin</th></tr>";
+ 			var usrName;
+ 			function getAdmin(){
+ 				request("usrPage", "isAdmin", function(admin){
+ 					adminStatus = admin;
+ 					if(admin == "true")
+ 					{
+ 						document.getElementById("dash").style = "display:block";
+ 						document.getElementById("um").style = "display:block";
+
+ 					}
+ 					getAttention();
+ 				});
+ 			}
+ 			function getAttention()
  			{
- 				document.getElementById("dash").style = "display:block";
- 				document.getElementById("um").style = "display:block";
+ 				request("usrPage", "usrInfo", function(arr){
+ 					att = JSON.parse(arr);
+ 					document.getElementById("userWelcome").innerHTML = "User Information for: "+att.name.replace("+", " "); + " ("+att.id+")"; 
+ 					document.getElementById("id").value = att.id;
+ 					document.getElementById("email").value = att.email;
+ 					document.getElementById("gsm").value = att.gsm;
+ 					document.getElementById("path").innerHTML = locPath + "(" + att.id + ")";
+ 					if(adminStatus)
+ 					{
+ 						document.getElementById("id").disabled = false;
+ 						document.getElementById("email").disabled = false;
+ 						document.getElementById("gsm").disabled = false;
+ 					}
+
+ 					if(att.admin == "true")
+ 					{
+ 						document.getElementById("admin").className = "btn btn-warning active";
+ 						document.getElementById("admin").value = "ADMIN";
+ 					}
+ 					if(att.operator == "true")
+ 					{
+ 						document.getElementById("op").className = "btn btn-danger active";
+ 						document.getElementById("op").value = "OPERATOR";
+ 					}
+ 					if(att.staff == "true")
+ 					{
+ 						document.getElementById("staff").className = "btn btn-info active";
+ 						document.getElementById("staff").value = "STAFF";
+ 					}
+ 					if(att.user == "true")
+ 					{
+ 						document.getElementById("user").className = "btn btn-Success active";
+ 						document.getElementById("user").value = "USER";
+ 					}
+ 					if(att.attention == "true")
+ 					{
+ 						document.getElementById('attDiv').style = "display:inline";
+ 						document.getElementById('attentionMsg').disabled = false;
+ 						document.getElementById('attentionMsg').value = att.attentionReason.replace(/\+/g, " ");
+ 					}
+ 				});
+ 			}
+ 			function render(){
+ 				document.getElementById("usrTbl").innerHTML = write;
+ 			}
+
+ 			function set(type){
+
+ 				getState(type, function(state){
+ 					console.log(state);
+ 					changeUsrInfo(type, state, att.id, function(status){
+ 						window.location.reload();
+ 					});
+ 					console.log(state);
+
+ 				});
+ 			}
+ 			function getState(type, callback)
+ 			{
+ 				if(type == "admin")
+ 				{
+ 					if(att.admin == "true")
+ 					{
+ 						callback(false)
+ 					}
+ 					else
+ 					{
+ 						callback(true);
+ 					}
+ 				}
+
+ 				if(type == "operator")
+ 				{
+ 					if(att.operator == "true")
+ 					{
+ 						callback(false)
+ 					}
+ 					else
+ 					{
+ 						callback(true);
+ 					}
+ 				}
+
+ 				if(type == "user")
+ 				{
+ 					if(att.user == "true")
+ 					{
+ 						callback(false)
+ 					}
+ 					else
+ 					{
+ 						callback(true);
+ 					}
+ 				}
+
+ 				if(type == "staff")
+ 				{
+ 					if(att.staff == "true")
+ 					{
+ 						callback(false)
+ 					}
+ 					else
+ 					{
+ 						callback(true);
+ 					}
+ 				}
 
  			}
- 			getAttention();
- 		});
- 	}
- 	function getAttention()
- 	{
- 		request("usrPage", "usrInfo", function(arr){
- 			att = JSON.parse(arr);
- 			document.getElementById("userWelcome").innerHTML = "User Information for: "+att.name.replace("+", " "); + " ("+att.id+")"; 
- 			document.getElementById("id").value = att.id;
- 			document.getElementById("email").value = att.email;
- 			document.getElementById("gsm").value = att.gsm;
- 			document.getElementById("path").innerHTML = locPath + "(" + att.id + ")";
- 			if(adminStatus)
+
+ 			function removeAttForce()
  			{
- 				document.getElementById("id").disabled = false;
- 				document.getElementById("email").disabled = false;
- 				document.getElementById("gsm").disabled = false;
+ 				alert("ATTENTION! REMOVING THE NOTICE WITHOUT MESSAGE WILL DELETE THE CASE AND REMOVE THE NOTICE!");
+ 				document.getElementById("removeAttBtt").disabled = "true";
+ 				document.getElementById("forceRmvBtt").style = "display:inline";
  			}
 
- 			if(att.admin == "true")
- 			{
- 				document.getElementById("admin").className = "btn btn-warning active";
- 				document.getElementById("admin").value = "ADMIN";
- 			}
- 			if(att.operator == "true")
- 			{
- 				document.getElementById("op").className = "btn btn-danger active";
- 				document.getElementById("op").value = "OPERATOR";
- 			}
- 			if(att.staff == "true")
- 			{
- 				document.getElementById("staff").className = "btn btn-info active";
- 				document.getElementById("staff").value = "STAFF";
- 			}
- 			if(att.user == "true")
- 			{
- 				document.getElementById("user").className = "btn btn-Success active";
- 				document.getElementById("user").value = "USER";
- 			}
- 			if(att.attention == "true")
- 			{
- 				document.getElementById('attDiv').style = "display:inline";
- 				document.getElementById('attentionMsg').disabled = false;
- 				document.getElementById('attentionMsg').value = att.attentionReason.replace(/\+/g, " ");
- 			}
- 		});
- 	}
- 	function render(){
- 		document.getElementById("usrTbl").innerHTML = write;
- 	}
-
- 	function set(type){
-
- 		getState(type, function(state){
- 			console.log(state);
- 			changeUsrInfo(type, state, att.id, function(status){
- 				window.location.reload();
- 			});
- 			console.log(state);
-
- 		});
- 	}
- 	function getState(type, callback)
- 	{
- 		if(type == "admin")
- 		{
- 			if(att.admin == "true")
- 			{
- 				callback(false)
- 			}
- 			else
- 			{
- 				callback(true);
- 			}
- 		}
-
- 		if(type == "operator")
- 		{
- 			if(att.operator == "true")
- 			{
- 				callback(false)
- 			}
- 			else
- 			{
- 				callback(true);
- 			}
- 		}
-
- 		if(type == "user")
- 		{
- 			if(att.user == "true")
- 			{
- 				callback(false)
- 			}
- 			else
- 			{
- 				callback(true);
- 			}
- 		}
-
- 		if(type == "staff")
- 		{
- 			if(att.staff == "true")
- 			{
- 				callback(false)
- 			}
- 			else
- 			{
- 				callback(true);
- 			}
- 		}
-
- 	}
-
- 	function removeAttForce()
- 	{
- 		alert("ATTENTION! REMOVING THE NOTICE WITHOUT MESSAGE WILL DELETE THE CASE AND REMOVE THE NOTICE!");
- 		document.getElementById("removeAttBtt").disabled = "true";
- 		document.getElementById("forceRmvBtt").style = "display:inline";
- 	}
-
- 	function removeAtt()
- 	{
- 		changeUsrInfo("attention", "false", att.id, function(status){
- 			window.location.reload();
- 		});
- 	}
-
- 	function openAttResponse()
- 	{
- 		document.getElementById("responseDiv").style = "display:inline";
- 	}
-
- 	function sendResponse()
- 	{
- 		changeUsrInfo("attentionResponse", document.getElementById('answerText').value, att.id, function(status){
- 			if(!document.getElementById("keepAttention").checked)
+ 			function removeAtt()
  			{
  				changeUsrInfo("attention", "false", att.id, function(status){
-
+ 					window.location.reload();
  				});
  			}
- 			window.location.reload();
- 		});
- 	}
 
- 	function saveGeneral()
- 	{
- 		changeUsrInfo("id", document.getElementById('id').value, att.id, function(status){
- 			changeUsrInfo("email", document.getElementById("email").value, att.id, function(status){
- 				changeUsrInfo("gsm", document.getElementById("gsm").value, att.id, function(status){
- 						window.location.reload();
+ 			function openAttResponse()
+ 			{
+ 				document.getElementById("responseDiv").style = "display:inline";
+ 			}
+
+ 			function sendResponse()
+ 			{
+ 				changeUsrInfo("attentionResponse", document.getElementById('answerText').value, att.id, function(status){
+ 					if(!document.getElementById("keepAttention").checked)
+ 					{
+ 						changeUsrInfo("attention", "false", att.id, function(status){
+
+ 						});
+ 					}
+ 					window.location.reload();
  				});
- 			});
- 		});
- 	}
+ 			}
 
- 	getAdmin();
- </script>
- </html>
+ 			function saveGeneral()
+ 			{
+ 				changeUsrInfo("id", document.getElementById('id').value, att.id, function(status){
+ 					changeUsrInfo("email", document.getElementById("email").value, att.id, function(status){
+ 						changeUsrInfo("gsm", document.getElementById("gsm").value, att.id, function(status){
+ 							window.location.reload();
+ 						});
+ 					});
+ 				});
+ 			}
+
+ 			getAdmin();
+ 		</script>
+ 		</html>

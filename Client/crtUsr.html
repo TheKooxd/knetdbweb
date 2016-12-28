@@ -2,91 +2,104 @@
  <html>
  <head>
  	<title> KNET DATABASE LINK </title>
-<link rel="stylesheet" href="/lib/bootstrap.css">
-	<link rel="stylesheet" type="text/css" href="default.css">
-	<link rel="stylesheet" type="text/css" href="links.css">
-	<script src="js/normal.js"></script>
+ 	<link rel="stylesheet" href="/lib/bootstrap.css">
+ 	<link rel="stylesheet" type="text/css" href="default.css">
+ 	<link rel="stylesheet" type="text/css" href="links.css">
+ 	<script src="js/normal.js"></script>
+ 	<script src="/lib/jquery/dist/jquery.js"></script>
+ 	<script src="lib/bootstrap.js"></script>
  </head>
  <body>
- <div id="controls">
-  <button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
-  <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
-</button>
-<input type="button" class="btn btn-danger" value="logout" onclick="logout()">
-</div>
- <div id="header">
- <h1>\\KNET DATABASE></h1>
-
-   <h7 id="path" class="locText"><div class = 'wrapper'><a class = 'cool third after' href='user.html'>\DATABASE</a><a class = 'cool third after' href = 'usrMgmt.html'>\USER_MANAGMENT</a><a class = 'cool third after' href = 'usrMgmt.html'>\CRT_USR</a></h7>
- </div>
- </div>
- <ul class="nav">
- <li class="nav"><a href="user.html">Front Page</a></li>
- <li class="nav"><a href="database.html">Database</a></li>
- <li class="nav"><a href="usr.html">User Info</a></li>
- <li class="nav active" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
-  <ul class="">
- <li class="nav"><a href="usrMgmt.html">User Overview</a></li>
- <li class="nav"><a href="searchUsr.html">Search Users</a></li>
-  <li class="nav active"><a href=".html">Create Users</a></li>
-     <li class="nav"><a href="grpMgmt.html">Group Managment</a></li>
- </ul>
- <li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
- </ul>
- <div id="content">
- <div id="Box" class "null" style="display:none">
- </div>
-<h2 id="userWelcome"> User Creator </h2>
-<hr>
-<div class="inv-box">
-<h3>Please input to every form.</h3>
-<div class="clearfix"></div>
-<form method="GET" action="/api" id="usrForm">
-<input type="hidden" name="origin" value="crtUsr">
-<input type="hidden" name="request" value="crtUsr">
-Name: <input class="padding" type="text" name="name"><br>
-ID: <input type="text" name="id"><br>
-Password: <input type="password" name="pass"><br>
-Admin: Yes: <input type="radio" name="admin" value="true">No: <input type="radio" name="admin" value="false" checked="checked"><br>
-Staff: Yes: <input type="radio" name="staff" value="true">No: <input type="radio" name="staff" value="false" checked="checked"><br>
-Operator: Yes: <input type="radio" name="op" value="true">No: <input type="radio" name="op" value="false" checked="checked"><br>
-Email: <input type="text" name="email"><br>
-GSM: <input type="text" name="gsm"><br>
-
-
-<br><br><input type="submit" class="btn btn-warning" value="Save">
-</form>
-</div>
- </div>
- </body>
-<script src="/lib/jquery/dist/jquery.js"></script>
-	<script type="text/javascript">
+ 	<div class="container fixed-margin">
+ 		<div class="col-md-12">
+ 			<div id="controls">
+ 				<button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
+ 					<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+ 				</button>
+ 				<input type="button" class="btn btn-danger" value="logout" onclick="logout()">
+ 			</div>
+ 		</div>
+ 		<div class="col-md-12">
+ 			<div id="header">
+ 				<h1>\\KNET DATABASE></h1>
+ 				<h7 id="path" class="locText"><div class = 'wrapper'><a class = 'cool third after' href='user.html'>\DATABASE</a><a class = 'cool third after' href = 'usrMgmt.html'>\USER_MANAGMENT</a><a class = 'cool third after' href = 'usrMgmt.html'>\CRT_USR</a></h7>
+ 			</div>
+ 		</div>
+ 		<div class="col-md-2">
+ 			<ul class="nav well">
+ 				<li class="nav"><a href="user.html">Front Page</a></li>
+ 				<li class="nav"><a href="database.html">Database</a></li>
+ 				<li class="nav"><a href="usr.html">User Info</a></li>
+ 				<li class="nav active" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
+ 				<ul class="">
+ 					<li class="nav"><a href="usrMgmt.html">User Overview</a></li>
+ 					<li class="nav"><a href="searchUsr.html">Search Users</a></li>
+ 					<li class="nav active"><a href=".html">Create Users</a></li>
+ 					<li class="nav"><a href="grpMgmt.html">Group Managment</a></li>
+ 				</ul>
+ 				<li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
+ 			</ul>
+ 		</div>
+ 		<div class="col-md-10">
+ 			<div class="alert alert-success" role="alert" id="successAlert" style="display:none">
+ 				<b>SUCCESS!</b> User has been saved!
+ 			</div>
+ 			<div class="panel panel-primary fixed-margin">
+ 				<div class="panel-heading">
+ 					<h3 class="panel-title">User Creator</h3>
+ 				</div>
+ 				<div class="panel-body">
+ 					<div class="col-md-3"></div>
+ 					<div class="col-md-3 text-right">
+ 						<div class="clearfix"></div>
+ 						<form method="GET" action="/api" id="usrForm">
+ 							<input type="hidden" name="origin" value="crtUsr">
+ 							<input type="hidden" name="request" value="crtUsr">
+ 							<span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Users real name, will make managment much easier."></span>
+ 							Name: <input type="text" name="name"><br>
+ 							<span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="ID is used to login and save user information on server."></span>
+ 							ID: <input type="text" name="id"><br>
+ 							<span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Password is encrypted so it's important that you remember it."></span>
+ 							Password: <input type="password" name="pass"><br>
+ 							Email: <input type="text" name="email"><br>
+ 							GSM: <input type="text" name="gsm"><br>
+ 						</div>
+ 						<div class="col-md-3 text-left">
+ 							<br>
+ 							Admin: Yes: <input type="radio" name="admin" value="true">No: <input type="radio" name="admin" value="false" checked="checked"><br>
+ 							Staff: Yes: <input type="radio" name="staff" value="true">No: <input type="radio" name="staff" value="false" checked="checked"><br>
+ 							Operator: Yes: <input type="radio" name="op" value="true">No: <input type="radio" name="op" value="false" checked="checked"><br>
+ 						</div>
+ 						<div class="col-md-3"></div>
+ 						<div class="col-md-12 text-center">
+ 							<br><br><input type="submit" class="btn btn-warning" value="Save">
+ 						</form>
+ 					</div>
+ 				</div>
+ 			</div>
+ 		</div>
+ 	</div>
+ </h7>
+</body>
+<script type="text/javascript">
 	var api = "http://knet.kcorporation.tk/api";
-		function getAdmin(){
+	function getAdmin(){
 		request("usrPage", "isAdmin", function(admin){
-		console.log(admin);
+			console.log(admin);
 			if(admin == "true")
 			{
-			document.getElementById("dash").style = "display:block";
-			document.getElementById("um").style = "display:block";
-		}
+				document.getElementById("dash").style = "display:block";
+				document.getElementById("um").style = "display:block";
+			}
 		});
+	}
+	getAdmin();
+	checkSuccess();
+	function checkSuccess()
+	{
+		if(getJsonFromUrl().success == "true") {
+			document.getElementById("successAlert").style = "display:block";
 		}
-		function getUsers()
-		{
-			request("usrMgr", "totalUsers", function(users){
-				var usrArr = users.split(',');
-				document.getElementById("usrCount").innerHTML = usrArr.length+" users";
-			});
-		}
-		getAdmin();
-		getUsers();
-		function success()
-		{
-			document.getElementById("Box").style = "display:block";
-		document.getElementById("Box").innerHTML = "<p class='Box'>User Created!</p>";
-		document.getElementById("Box").className = "success";
-		document.getElementById("usrForm").reset();
-		}
-	</script>
- </html>
+	}
+</script>
+</html>

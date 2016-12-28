@@ -79,12 +79,14 @@ input.classy {
 }
 
 ul.nav{
+	font-size: 15px;
 	list-style-type: none;
 	margin: 10px;
 	margin-top:20px;
-	width: 200px;
+	width: 250px;
 	background-color: #f1f1f1;
-	float: left
+	float: left;
+	.well;
 }
 
 li.nav a{
@@ -166,6 +168,10 @@ div.inv-box{
 	display: inline;
 }
 
+.margins {
+	margin: 10px;
+}
+
 div.big-box{
 	margin: 10px;
 	width: 80%;
@@ -226,6 +232,19 @@ hr
 }
 
 .log {
-	font-size: 8px; 
+	font-size: 12px; 
 	font-family: "Lucida Console", Monaco, monospace;
+}
+
+.fixed {
+	margin-left: 250px;
+	margin-right: 250px;
+}
+
+.big-text {
+	font-size: 70px;
+}
+
+.fixed-margin {
+	margin-top: 30px;
 }

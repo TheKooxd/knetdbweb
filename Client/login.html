@@ -7,81 +7,98 @@
  	<script src="js/normal.js"></script>
  </head>
  <body class="login">
-
- 	<div id="Box" class "null" style="display:none">
- 		<!-- Content will be drawn by javascript -->
+ 	<div class="container">
+ 		<div class="col-md-2"></div>
+ 		<div class="col-md-5">
+ 		</div>
+ 		<div class="col-md-3"></div>
  	</div>
- 	<div id = "loginBox">
- 		<input type = "text" id = "id" value = "User ID" onclick="removeTextUsr()">
- 		<br>
- 		<input type = "password" id = pass value = "Pass" onclick="removeTextPass()">
- 		<br>
- 		<input class="btn btn-warning" type = submit onclick = "getCode()" name = "submit" value = "LOGIN" id="btnMargin2">
+ 	<div class="col-md-3"></div>
+ 	<div class="col-md-6">
+ 		<div class="panel panel-info">
+ 			<div class="panel-heading">
+ 				<h3 class="panel-title">Login</h3>
+ 			</div>
+ 			<div class="panel-body text-center">
+ 				<div id="err" style="display:none" class="alert alert-danger" role="alert">
+ 					<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+ 					<span class="sr-only">Error:</span>
+ 					<div id="message"></div>
+ 				</div>
+ 				<input type = "text" id = "id" value = "User ID" onclick="removeTextUsr()">
+ 				<br>
+ 				<input type = "password" id = pass value = "Pass" onclick="removeTextPass()">
+ 				<br>
+ 				<input class="btn btn-warning" type = submit onclick = "getCode()" name = "submit" value = "LOGIN" id="btnMargin2">
+ 			</div>
+ 		</div>
  	</div>
- 	<footer id="footer">
- 		<hr>
- 		&copy; 2016-2016 KCORPORATION.TK ALL RIGHTS RESERVED <br>
- 		&copy; 2016-2016 K-CORPORATION ALL RIGHTS RESERVED
- 	</footer>
- 	<script src="/lib/jquery/dist/jquery.js"></script>
- 	<script type="text/javascript">
- 		var api = "http://knet.kcorporation.tk/api";
- 		var result = "data";
- 		var par = getParameterByName("loggedOut");
- 		if(par)
- 		{
- 			document.getElementById("Box").style = "display:block";
- 			document.getElementById("Box").innerHTML = "<p class='Box'><b>You Logged Out!</b></p><p>This means that your old cookie was marked as old in the server which should prevent other people accessing your profile without your password.";
- 			document.getElementById("Box").className = "success";
- 		}
- 		function getCode(){
- 			data = $.ajax({
- 				url: api,
- 				dataType: 'text',
- 				method: 'get',
- 				crossDomain: true,
- 				data: {"id":document.getElementById("id").value,"pass":document.getElementById("pass").value,"origin":"login"},
- 				success: function(data) {
- 					window.location.href = "user.html";
- 					document.getElementById("code").style = "display:block";
- 					document.getElementById("code").style = "display:block";
- 					document.getElementById("btnMargin2").value = "Login as: "+data;
+ 	<div class="col-md-3"></div>
+ </div>
+ <footer id="footer">
+ 	<hr>
+ 	&copy; 2016-2016 KCORPORATION.TK ALL RIGHTS RESERVED <br>
+ 	&copy; 2016-2016 K-CORPORATION ALL RIGHTS RESERVED
+ </footer>
+ <script src="/lib/jquery/dist/jquery.js"></script>
+ <script type="text/javascript">
+ 	var api = "http://knet.kcorporation.tk/api";
+ 	var result = "data";
+ 	var par = getParameterByName("loggedOut");
+ 	if(par)
+ 	{
+ 		document.getElementById("err").style = "display:block";
+ 		document.getElementById("message").innerHTML = "<p class='Box'><b>You Logged Out!</b></p><p>This means that your cookie was marked as old in the server which should prevent other people accessing your profile without your password.";
+ 		document.getElementById("err").className = "alert alert-success";
+ 	}
+ 	function getCode(){
+ 		data = $.ajax({
+ 			url: api,
+ 			dataType: 'text',
+ 			method: 'get',
+ 			crossDomain: true,
+ 			data: {"id":document.getElementById("id").value,"pass":document.getElementById("pass").value,"origin":"login"},
+ 			success: function(data) {
+ 				window.location.href = "user.html";
+ 				document.getElementById("code").style = "display:block";
+ 				document.getElementById("code").style = "display:block";
+ 				document.getElementById("btnMargin2").value = "Login as: "+data;
 
- 				},
- 				error: function(data) {
- 					console.log(data.status);
- 					if(data.status == "403")
- 					{
- 						document.getElementById("Box").style = "display:block";
- 						document.getElementById("Box").className = "error";
- 						document.getElementById("Box").innerHTML = "<p class='Box'><b>Username or password wrong!</b></p><p>You can recover your password by contacting local admin or operator.</p>";
- 					}
- 					if(data.status == "410")
- 					{
- 						document.getElementById("Box").style = "display:block";
- 						document.getElementById("Box").className = "error";
- 						document.getElementById("Box").innerHTML = "<p class='Box'><b>Your account has been disabled by operator(s)!</p></b><p>If you think this is error, contact your local operator.</p>";
- 					}
- 					if(data.status == "503")
- 					{
- 						document.getElementById("Box").style = "display:block";
- 						document.getElementById("Box").className = "warning";
- 						document.getElementById("Box").innerHTML = "<p class='Box'><b>Can't reach the KNET DATABASE API SERVER</b></p><p>There might be a scheduled maintance. Please come back later!";
- 					}
-
+ 			},
+ 			error: function(data) {
+ 				console.log(data.status);
+ 				if(data.status == "403")
+ 				{
+ 					document.getElementById("err").style = "display:block";
+ 					document.getElementById("err").className = "alert alert-danger";
+ 					document.getElementById("message").innerHTML = "<p class='Box'><b>Username or password wrong!</b></p><p>You can recover your password by contacting local admin or operator.</p>";
  				}
- 			});
- 		}
- 		function removeTextUsr()
- 		{
+ 				if(data.status == "410")
+ 				{
+ 					document.getElementById("err").style = "display:block";
+ 					document.getElementById("err").className = "alert alert-danger";
+ 					document.getElementById("message").innerHTML = "<p class='Box'><b>Your account has been disabled by operator(s)!</p></b><p>If you think this is error, contact your local operator.</p>";
+ 				}
+ 				if(data.status == "503")
+ 				{
+ 					document.getElementById("err").style = "display:block";
+ 					document.getElementById("err").className = "alert alert-warning";
+ 					document.getElementById("message").innerHTML = "<p class='Box'><b>Can't reach the KNET DATABASE API SERVER</b></p><p>There might be a scheduled maintance. Please come back later!";
+ 				}
 
- 			document.getElementById("id").value = "";
- 		}
- 		function removeTextPass()
- 		{
+ 			}
+ 		});
+ 	}
+ 	function removeTextUsr()
+ 	{
 
- 			document.getElementById("pass").value = "";
- 		}
- 	</script>
- </body>
- </html>
+ 		document.getElementById("id").value = "";
+ 	}
+ 	function removeTextPass()
+ 	{
+
+ 		document.getElementById("pass").value = "";
+ 	}
+ </script>
+</body>
+</html>

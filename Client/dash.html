@@ -10,139 +10,190 @@
  	<script src="/lib/jquery/dist/jquery.js"></script>
  </head>
  <body>
- 	<div id="controls">
- 		<button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
- 			<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
- 		</button>
- 		<input type="button" class="btn btn-danger" value="logout" onclick="logout()">
+ 	<div class="container fixed-margin">
+ 		<div class="col-md-12">
+ 			<div id="controls">
+ 				<button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
+ 					<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+ 				</button>
+ 				<input type="button" class="btn btn-danger" value="logout" onclick="logout()">
+ 			</div>
+ 		</div>
+ 		<div class="col-md-12">
+ 			<div id="header">
+ 				<h1>\\KNET DATABASE></h1>
+ 				<h7 id="path" class="locText"><div class = 'wrapper'><a class = 'cool third after' href='user.html'>\DATABASE\DASHBOARD</a></h7>
+ 			</div>
+ 		</div>
+ 		<div class="col-md-2">
+ 			<ul class="nav well">
+ 				<li class="nav"><a href="user.html">Front Page</a></li>
+ 				<li class="nav"><a href="database.html">Database</a></li>
+ 				<li class="nav"><a href="usr.html">User Info</a></li>
+ 				<li class="nav" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
+
+ 				<li class="nav active" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
+ 			</ul>
+ 		</div>
+ 		<div class="col-md-10">
+ 			<div class="panel panel-primary fixed-margin">
+ 				<div class="panel-heading">
+ 					<h3 class="panel-title">KNET-DASHBOARD Operator Dashboard</h3>
+ 				</div>
+ 				<div class="panel-body">
+ 					<div class="col-md-6">
+ 						<div class="panel panel-info fixed-margin">
+ 							<div class="panel-heading">
+ 								<h3 class="panel-title"><a target="_blank" href="sysLog.html">SYSTEM LOG</a></h3>
+ 							</div>
+ 							<div class="panel-body">
+ 								Choose how many lines: 
+ 								<select id="rowSelector" onchange="getLog()">
+ 									<option value="10">10</option>
+ 									<option value="25">25</option>
+ 									<option value="50">50</option>
+ 									<option value="100">100</option>
+ 								</select>
+ 								<br>
+ 								<input type="checkbox" id="opAdmin" name="filter" value="admin" onclick="getLog()" checked>Show admin messages<br>
+ 								<input type="checkbox" id="opErr" name="filter" value="err" onclick="getLog()" checked>Show error messages<br>
+ 								<input type="checkbox" id="opNormal" name="filter" value="normal" onclick="getLog()" checked>Show normal messages<br>
+ 							</p>
+ 							<div id="log" class="log">
+ 							</div>
+ 						</div>
+ 					</div>
+ 				</div>
+ 				<div class="col-md-6">
+ 					<div class="panel panel-info" id="statPanel">
+ 						<div class="panel-heading">
+ 							<h3 class="panel-title">STATISTICS</h3>
+ 						</div>
+ 						<div class="panel-body">
+ 							<div class="mini-box">
+ 								<span class="label label-danger" style="display:none" id="loggedInUsersBagde">Much users</span>
+ 								<h1 id="loggedInUsers" class="mini-box"></span></h1>
+ 								Currently logged in users
+ 							</div>
+ 							<div class="mini-box">
+ 								<span class="label label-danger" style="display:none" id="totalReqBadge">Possible DDOS attack</span>
+ 								<h1 id="totalReq" class="mini-box">...</h1>
+ 								Requests/minute
+ 							</div>
+ 							<div class="mini-box">
+ 								<span class="label label-danger" style="display:none" id="totalErrBadge">Server might have a bug</span>
+ 								<h1 id="totalErr" class="mini-box"></h1>
+ 								Total erros logged
+ 							</div>
+ 						</div>
+ 					</div>
+ 				</div>
+ 			</div>
+ 		</div>
  	</div>
- 	<div id="header">
- 		<h1>\\KNET DATABASE></h1>
- 		<h7 id="path" class="locText"><div class = 'wrapper'><a class = 'cool third after' href='user.html'>\DATABASE\DASHBOARD</a></h7>
- 	</div>
- </div>
- <ul class="nav">
- 	<li class="nav"><a href="user.html">Front Page</a></li>
- 	<li class="nav"><a href="database.html">Database</a></li>
- 	<li class="nav"><a href="usr.html">User Info</a></li>
- 	<li class="nav" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
+ 	<script type="text/javascript">
+ 		var api = "http://knet.kcorporation.tk/api";
+ 		var att;
+ 		var isAdmin = false;
+ 		var renderArr = [];
+ 		function getAdmin(){
+ 			request("usrPage", "isAdmin", function(admin){
+ 				if(admin == "true")
+ 				{
+ 					document.getElementById("dash").style = "display:block";
+ 					document.getElementById("um").style = "display:block";
+ 					isAdmin = true;
+ 				}
+ 				getLog();
+ 			});
+ 		}
+ 		function getLog() {
+ 			request("dashboard", "log", function(log){
+ 				log = log.split(',');
+ 				log.forEach(function (line, index){
+ 					renderArr[index] = line + "<br>";
+ 					if(index == log.length - 1) {
+ 						render();
+ 						getStats();
+ 					}
+ 				});
+ 			});
+ 		}
+ 		function getStats() {
+ 			dbReq("dashboard", "stats", "loggedInCount", function(reply){
+ 				document.getElementById('loggedInUsers').innerHTML = formatNumber(reply, ' ');
+ 				dbReq("dashboard", "stats", "totalReq", function(reply){
+ 					document.getElementById("totalReqBadge").style = "display:none"
+ 					document.getElementById("statPanel").className = "panel panel-info fixed-margin"
+ 					if(reply > 500) {
+ 						document.getElementById("statPanel").className = "panel panel-warning fixed-margin"
+ 						document.getElementById("totalReqBadge").style = "display:absolute"
+ 						document.getElementById("totalReqBadge").className = "label label-warning"
+ 						document.getElementById("totalReqBadge").innerHTML = "WARNING"
+ 						if(reply > 1000) {
+ 							document.getElementById("statPanel").className = "panel panel-danger fixed-margin"
+ 							document.getElementById("totalReqBadge").style = "display:absolute"
+ 							document.getElementById("totalReqBadge").className = "label label-danger"
+ 							document.getElementById("totalReqBadge").innerHTML = "DANGER"
+ 						}
+ 					}
+ 					document.getElementById('totalReq').innerHTML = formatNumber(reply, ' ');
+ 					dbReq("dashboard", "stats", "totalErr", function(reply){
+ 						document.getElementById("totalErrBadge").style = "display:none"
+ 						if(reply > 50) {
+ 							document.getElementById("statPanel").className = "panel panel-warning fixed-margin"
+ 							document.getElementById("totalErrBadge").style = "display:absolute"
+ 							document.getElementById("totalErrBadge").className = "label label-warning"
+ 							document.getElementById("totalErrBadge").innerHTML = "WARNING"
+ 						}
+ 						if(reply > 100) {
+ 							document.getElementById("statPanel").className = "panel panel-danger fixed-margin"
+ 							document.getElementById("totalErrBadge").style = "display:absolute"
+ 							document.getElementById("totalErrBadge").className = "label label-danger"
+ 							document.getElementById("totalErrBadge").innerHTML = "DANGER"
+ 						}
+ 						document.getElementById('totalErr').innerHTML = formatNumber(reply, ' ');
+ 					});
+ 				});
+ 			});
+ 		}
+ 		function render() {
+ 			renderArr = renderArr.slice(0, document.getElementById('rowSelector').value);
+ 			renderArr = renderArr.filter(parser);
+ 			document.getElementById('log').innerHTML = renderArr.toString().replace(/,|GMT\+0200 \(EET\)/g, ' ');
+ 		}
+ 		function parser(line) {
+ 			if(document.getElementById('opNormal').checked) {
+ 				if(line.includes('[ADMIN]') || line.includes('[ERR]')) {
 
- 	<li class="nav active" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
- </ul>
- <div id="content">
- 	<h2 id="userWelcome"> KNET-DATABASE Operator Dashboard </h2>
- 	<hr>
- 	<div class="inv-box">
- 		<a target="_blank" href="sysLog.html"><h2>System Log</h2></a>
- 		<hr>
- 		Choose how many lines: 
- 		<select id="rowSelector" onchange="getLog()">
- 			<option value="10">10</option>
- 			<option value="25">25</option>
- 			<option value="50">50</option>
- 			<option value="100">100</option>
- 		</select>
- 		<br>
- 		<input type="checkbox" id="opAdmin" name="filter" value="admin" onclick="getLog()" checked>Show admin messages<br>
- 		<input type="checkbox" id="opErr" name="filter" value="err" onclick="getLog()" checked>Show error messages<br>
- 		<input type="checkbox" id="opNormal" name="filter" value="normal" onclick="getLog()" checked>Show normal messages<br>
- 	</p>
- 	<div id="log" class="log">
- 	</div>
- </div>
- <div class="inv-box">
- 	<h2>Statistics</h2>
- 	<hr>
- 	<div class="mini-box">
- 		<h1 id="loggedInUsers" class="mini-box">...</h1>
- 		Currently logged in users
- 	</div>
- 	<div class="mini-box">
- 		<h1 id="totalReq" class="mini-box">...</h1>
- 		Requests/minute
- 	</div>
- 	<div class="mini-box">
- 		<h1 id="totalErr" class="mini-box">...</h1>
- 		Total erros logged
- 	</div>
- </div>
-</div>
-<script type="text/javascript">
-	var api = "http://knet.kcorporation.tk/api";
-	var att;
-	var isAdmin = false;
-	var renderArr = [];
-	function getAdmin(){
-		request("usrPage", "isAdmin", function(admin){
-			if(admin == "true")
-			{
-				document.getElementById("dash").style = "display:block";
-				document.getElementById("um").style = "display:block";
-				isAdmin = true;
-			}
-			getLog();
-		});
-	}
-	function getLog() {
-		request("dashboard", "log", function(log){
-			log = log.split(',');
-			log.forEach(function (line, index){
-				renderArr[index] = line + "<br>";
-				if(index == log.length - 1) {
-					render();
-					getStats();
-				}
-			});
-		});
-	}
-	function getStats() {
-		dbReq("dashboard", "stats", "loggedInCount", function(reply){
-			document.getElementById('loggedInUsers').innerHTML = formatNumber(reply, ' ');
-			dbReq("dashboard", "stats", "totalReq", function(reply){
-				document.getElementById('totalReq').innerHTML = formatNumber(reply, ' ');
-				dbReq("dashboard", "stats", "totalErr", function(reply){
-					document.getElementById('totalErr').innerHTML = formatNumber(reply, ' ');
-				});
-			});
-		});
-	}
-	function render() {
-		renderArr = renderArr.slice(0, document.getElementById('rowSelector').value);
-		renderArr = renderArr.filter(parser);
-		document.getElementById('log').innerHTML = renderArr.toString().replace(/,|GMT\+0200 \(EET\)/g, ' ');
-	}
-	function parser(line) {
-		if(document.getElementById('opNormal').checked) {
-			if(line.includes('[ADMIN]') || line.includes('[ERR]')) {
+ 				}
+ 				else {
+ 					return line; 				}
+ 				}
 
-			}
-			else {
-				return line; 				}
-			}
+ 				if(document.getElementById('opAdmin').checked) {
+ 					if(line.includes('[ADMIN]')) {
+ 						return line;
+ 					}
+ 				}
 
-			if(document.getElementById('opAdmin').checked) {
-				if(line.includes('[ADMIN]')) {
-					return line;
-				}
-			}
+ 				if(document.getElementById('opErr').checked) {
+ 					if(line.includes('[ERR]')) {
+ 						return line;
+ 					}
+ 				}
 
-			if(document.getElementById('opErr').checked) {
-				if(line.includes('[ERR]')) {
-					return line;
-				}
-			}
+ 			}
 
-		}
+ 			function updateDash(){
+ 				setTimeout(function(){
+ 					getLog();
+ 					updateDash();
+ 				}, 2000);
 
-		function updateDash(){
-			setTimeout(function(){
-				getLog();
-				updateDash();
-			}, 2000);
-
-		}
-		getAdmin();
-		updateDash();
-	</script>
-</body>
-</html>
+ 			}
+ 			getAdmin();
+ 			updateDash();
+ 		</script>
+ 	</body>
+ 	</html>

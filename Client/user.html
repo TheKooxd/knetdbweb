@@ -6,127 +6,171 @@
  	<link rel="stylesheet" type="text/css" href="default.css">
  	<link rel="stylesheet" type="text/css" href="links.css">
  	<script src="js/normal.js"></script>
+ 	<script src="/lib/jquery/dist/jquery.js"></script>
+ 	<script src="lib/bootstrap.js"></script>
  </head>
  <body>
- 	<div id="controls">
- 		<button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
- 			<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
- 		</button>
- 		<input type="button" class="btn btn-danger" value="logout" onclick="logout()">
- 	</div>
- 	<div id="header">
- 		<h1>\\KNET DATABASE></h1>
- 		<h7 id="path" class="locText"><div class = 'wrapper'><a class = 'cool third after' href='user.html'>\DATABASE</a></h7>
- 	</div>
- </div>
- <ul class="nav">
- 	<li class="nav active"><a href="user.html">Front Page</a></li>
- 	<li class="nav"><a href="database.html">Database</a></li>
- 	<li class="nav"><a href="usr.html">User Info</a></li>
- 	<li class="nav" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
+ 	<div class="container fixed-margin">
+ 		<div class="col-md-12">
+ 			<div id="controls">
+ 				<button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
+ 					<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+ 				</button>
+ 				<input type="button" class="btn btn-danger" value="logout" onclick="logout()">
+ 			</div>
+ 		</div>
+ 		<div class="col-md-12">
+ 			<div id="header">
+ 				<h1>\\KNET DATABASE></h1>
+ 				<h7 id="path" class="locText"><div class = 'wrapper'><a class = 'cool third after' href='user.html'>\DATABASE</a></h7>
+ 			</div>
+ 		</div>
+ 		<div class="col-md-12">
+ 			<div class="alert alert-error alert-danger" role="alert" style="display:none" id="errorBox">
+ 				<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+ 				<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> Oh snap, you shouln't be watching that, child! Server responded with following error: <div style="display:inline" id="reason">asd</div>
+ 			</div>
+ 		</div>
+ 		<div calss="col-md-12">
+ 			<div class="alert alert-error alert-info" role="alert" style="display:none" id="infoBox">
+ 				<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+ 				<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> Your attention has been saved
+ 			</div>
+ 		</div>
+ 		<div calss="col-md-12">
+ 			<div class="alert alert-error alert-info" role="alert" style="display:none" id="503Box">
+ 				<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+ 				<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> You broke it god dammit! Server responded with 503 </div>
+ 			</div>
+ 		</div>
+ 		<div class="col-md-2 col-xs-12">
+ 			<ul class="nav well">
+ 				<li class="nav active"><a href="user.html">Front Page</a></li>
+ 				<li class="nav"><a href="database.html">Database</a></li>
+ 				<li class="nav"><a href="usr.html">User Info</a></li>
+ 				<li class="nav" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
+ 				<li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
+ 			</ul>
+ 		</div>
+ 		<div class="col-md-9">
+ 			<h2 id="userWelcome"> Welcome user </h2>
+ 			<br>
+ 			<div class="panel panel-info" id="responsePanel" style="display:none">
+ 				<div class="panel-heading">
+ 					<h3 class="panel-title" id="responseTitle"></h3>
+ 				</div>
+ 				<div class="panel-body" id="responseContent">
+ 					Panel content
+ 				</div>
+ 			</div>
+ 		</div>
 
- 	<li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
- </ul>
- <div id="content">
- 	<h2 id="userWelcome"> Welcome user </h2>
- 	<hr>
- 	<div class="big-box" id="response" style="display:none">
+ 		<div class="col-md-9">
+ 			<div class="panel panel-info" id="attPanel" style="display:none">
+ 				<div class="panel-heading">
+ 					<h3 class="panel-title" id="attTitle"></h3>
+ 				</div>
+ 				<div class="panel-body" id="attContent">
+ 					Panel content
+ 				</div>
+ 			</div>
+ 			<div class="big-box" id="message" style="display:none">
+ 			</div>
+ 		</div>
  	</div>
  	<div class="big-box" id="help">
  	</div>
- 	<div class="big-box" id="attDiv" style="display:none">
- 	</div>
- 	<div class="big-box" id="message" style="display:none">
- 	</div>
- </div>
-</body>
-<script src="/lib/jquery/dist/jquery.js"></script>
-<script type="text/javascript">
-	var api = "http://knet.kcorporation.tk/api";
-	var att;
-	var isAdmin = false;
-	function getAdmin(){
-		request("usrPage", "isAdmin", function(admin){
-			if(admin == "true")
-			{
-				document.getElementById("dash").style = "display:block";
-				document.getElementById("um").style = "display:block";
-				isAdmin = true;
-			}
-			getResponse();
-			getMessage();
-		});
-	}
-	function getName(){
-		request("usrPage", "usrName", function(name){
-			document.getElementById("userWelcome").innerHTML = "Welcome "+name.replace(/\+/g, " ") ;
-			getAdmin();
-		});
-	}
-	function getResponse()
-	{
-		request("usrPage", "usrInfo", function(arr){
-			att = JSON.parse(arr);
-			if(isAdmin)
-			{
-				request("usrPage", "getAttention", function(att){
-					var usrArr = att.split(',');
-					console.log(usrArr.length);
-					if(usrArr[0] != "" && usrArr.length != 8)
-					{
-						document.getElementById("attDiv").style = "display:block";
-						document.getElementById("attDiv").innerHTML = "<h3> New Attention Request(s): </h3><hr> Number Of Request to Handle: "+usrArr.length + "<br><br><input id='removeResponse' type='button' class='btn btn-info' value='Goto Attention List' onclick='attList()'>";
-					}
+ </body>
+ <script type="text/javascript">
+ 	var api = "http://knet.kcorporation.tk/api";
+ 	var att;
+ 	var isAdmin = false;
+ 	function getAdmin(){
+ 		request("usrPage", "isAdmin", function(admin){
+ 			if(admin == "true")
+ 			{
+ 				document.getElementById("dash").style = "display:block";
+ 				document.getElementById("um").style = "display:block";
+ 				isAdmin = true;
+ 			}
+ 			getResponse();
+ 			getMessage();
+ 		});
+ 	}
+ 	function getName(){
+ 		request("usrPage", "usrName", function(name){
+ 			document.getElementById("userWelcome").innerHTML = "Welcome "+name.replace(/\+/g, " ") ;
+ 			getAdmin();
+ 		});
+ 	}
+ 	function getResponse()
+ 	{
+ 		request("usrPage", "usrInfo", function(arr){
+ 			att = JSON.parse(arr);
+ 			if(isAdmin)
+ 			{
+ 				request("usrPage", "getAttention", function(att){
+ 					var usrArr = att.split(',');
+ 					console.log(usrArr.length);
+ 					if(usrArr[0] != "" && usrArr.length != 8)
+ 					{
+ 						document.getElementById("attPanel").style = "display:block"
+ 						document.getElementById("attTitle").innerHTML = "New Attention Request(s)"
+ 						document.getElementById("attContent").innerHTML ="Number Of Request to Handle: "+usrArr.length + "<br><br><input id='removeResponse' type='button' class='btn btn-info' value='Goto Attention List' onclick='attList()'>";
+ 					}
 
-				});
+ 				});
 
-			}
-			document.getElementById("response").style = "display:none"
-			if(att.attentionResponse != "undefined")
-			{
-				document.getElementById("response").style = "display:inline"
-				document.getElementById("response").innerHTML = "<h3> Admin Response to your attention request: </h3><hr> "+att.attentionResponse.replace(/\+/g, " ") + "<br><br><input id='removeResponse' type='button' class='btn btn-info' value='Remove reponse' onclick='removeResponse()'> <input id='answerResponse' type='button' class='btn btn-Primary active' value='Answer reponse' onclick='help()'>";
-			}
-		});
+ 			}
+ 			document.getElementById("responsePanel").style = "display:none"
+ 			if(att.attentionResponse != "undefined")
+ 			{
+ 				document.getElementById("responsePanel").style = "display:block"
+ 				document.getElementById("responseTitle").innerHTML = "Admin Response to your attention request"
+ 				document.getElementById("responseContent").innerHTML = att.attentionResponse.replace(/\+/g, " ") + "<br><br><input id='removeResponse' type='button' class='btn btn-info' value='Remove reponse' onclick='removeResponse()'> <input id='answerResponse' type='button' class='btn btn-Primary active' value='Answer reponse' onclick='help()'>";
+ 			}
+ 		});
 
-	}
+ 	}
 
-	function removeResponse()
-	{
-		changeUsrInfo("attentionResponse", "undefined", att.id, function(status){
-			window.location.reload();
-		});
-	}
+ 	function removeResponse()
+ 	{
+ 		changeUsrInfo("attentionResponse", "undefined", att.id, function(status){
+ 			window.location.reload();
+ 		});
+ 	}
 
-	function help()
-	{
-		document.getElementById("help").innerHTML = '<iframe src="widgets/helpWidget.html" height="170" width="450" frameborder=0>';
-	}
-	function attList()
-	{
-		window.location.href = 'usrAtt.html'
-	}
+ 	function help()
+ 	{
+ 		document.getElementById("help").innerHTML = '<iframe src="widgets/helpWidget.html" height="170" width="450" frameborder=0>';
+ 	}
+ 	function attList()
+ 	{
+ 		window.location.href = 'usrAtt.html'
+ 	}
 
-	function getMessage() {
-		var par = getJsonFromUrl();
-		if(par.box == "attention") {
-			document.getElementById("attDiv").style = "display:block";
-			document.getElementById("attDiv").innerHTML = "<h3> Your help request has been saved! </h3><hr> Please wait till admins have time to contact you. We let you know when your attention request is being processed";
-		}
-		if(par.box == "403") {
-			document.getElementById("attDiv").style = "display:block";
-			document.getElementById("attDiv").className += " error";
-			document.getElementById("attDiv").innerHTML = "<p class='Box'><b>YOU DON'T HAVE PERMISSIONS TO SEE THAT PAGE. PERMISSIONS REQUIRED IS "+par.level+"</b></p><p class='Box'>If you think this is an error please contact admin by clicking </span class='glyphicon glyphicon-question-sign' aria-hidden='true'> on upper-right corner. </p>";
-		}
-	}
+ 	function getMessage() {
+ 		var par = getJsonFromUrl();
+ 		if(par.box == "attention") {
+ 			document.getElementById("infoBox").style = "display:block";
+ 		}
+ 		if(par.box == "error" && par.err == "403") {
+ 			document.getElementById("errorBox").style = "display:block";
+ 			document.getElementById("reason").innerHTML = par.level;
+ 		}
+ 		if(par.box == "error" && par.err == "503") {
+ 			document.getElementById("errorBox").style = "display:block";
+ 			document.getElementById("reason").innerHTML = par.level;
+ 		}
+ 	}
 
-	function refresh(){
-		setTimeout(function(){
-			getResponse();
-			refresh();
-		}, 5000);
-	}
-	getName();
-	refresh();
-</script>
-</html>
+ 	function refresh(){
+ 		setTimeout(function(){
+ 			getResponse();
+ 			refresh();
+ 		}, 5000);
+ 	}
+ 	getName();
+ 	refresh();
+ </script>
+ </html>

@@ -42,11 +42,9 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 		if(reply != "null") {
 			client.hget("config", "latestBackup", function(err, latest){
 				var d = new Date();
-				console.log(d.getTime()/60000)
-				console.log(latest + reply);
-				console.log(reply);
 				if(Number(latest) + Number(reply) < d.getTime()/60000) {
 					backupCache(function(status){
+						console.log("Backing up");
 						client.hset("config", "latestBackup", d.getTime()/60000)
 					})
 				}
@@ -329,8 +327,8 @@ function getUsrInfo(usr, callback) {
 			client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>'+err);
 			callback(503);
 		}
-		if(obj.admin == "true" || obj.operator == "true") {
-			client.hgetall(usr, function (err, usrInfo) {
+		client.hgetall(usr, function (err, usrInfo) {
+			if(obj.admin == "true" || obj.operator == "true" || obj.id == usrInfo.id) {
 				if(err) {
 					client.incr('totalErr');
 					client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>Couln\'t find user '+usr);
@@ -340,18 +338,18 @@ function getUsrInfo(usr, callback) {
 				else {
 					callback(usrInfo);
 				}
-			});
-		}
-		else {
-			callback(403);
-		}
+			}
+			else {
+				callback(403);
+			}
+		});
 	});
 }
 
 function getGrpInfo(id, callback)
 {
 	getUsrInfo(usrId, function(usr){
-		fs.readFile('grp/'+id, 'utf8', function (err, data) {
+		client.hgetall('grp'+id, function(err, grpInfo) {
 			if (err)
 			{
 				client.incr('totalErr');
@@ -359,9 +357,8 @@ function getGrpInfo(id, callback)
 				client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>'+err);
 				callback(503);
 			}
-			if(data != undefined)
+			if(grpInfo != undefined)
 			{
-				grpInfo = JSON.parse(data);
 				if(usr.admin == "true" || grpInfo.leader == usr.id) {
 					client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font>User '+buUsrId+' requested group info for group '+grpInfo.name);
 					resCode = 200;
@@ -383,31 +380,14 @@ function changeUsrInfo(term, value, id, callback)
 			if(usr.admin == "true")
 			{
 				client.lpush('log', '['+Date()+'] <font class="err">[ADMIN]</font>User '+buUsrId+' changed '+data.name+'\'s '+term+' to '+value);
-				if(term == 'admin')
-				{
-					data.admin = value;
-				}
 				if(term == 'id')
 				{
 					data.id = value;
 					id = value;
 				}
-				if(term == 'group')
-				{
-					data.group = value;
-				}
 				if(term == 'email')
 				{
 					value = value.replace(/%40/g, "@");
-					data.email = value;
-				}
-				if(term == 'gsm')
-				{
-					data.gsm = value;
-				}
-				if(term == "attention")
-				{
-					data.attention = value;
 				}
 
 				if(term == "attentionResponse")
@@ -415,23 +395,6 @@ function changeUsrInfo(term, value, id, callback)
 					if(value != undefined) {
 						value = value.replace(/%3F/g, "?");
 					}
-					data.attentionResponse = value;
-				}
-
-
-				if(term == "staff")
-				{
-					data.staff = value;
-				}
-
-				if(term == "user")
-				{
-					data.user = value;
-				}
-
-				if(term == "operator")
-				{
-					data.operator = value;
 				}
 
 				client.HSET(id, term, value, function(err){
@@ -456,32 +419,7 @@ function changeGrpInfo(term, value, id, callback)
 		getGrpInfo(id, function(data){
 			if(usr.admin == "true")
 			{
-				if(term == 'description')
-				{
-					data.description = value;
-				}
-				if(term == 'gsm')
-				{
-					data.gsm = value;
-				}
-				if(term == 'leader')
-				{
-					data.leader = value;
-				}
-				if(term == 'location')
-				{
-					data.location = value;
-				}
-				if(term == 'name')
-				{
-					data.name = value;
-				}
-				if(term == "attention")
-				{
-					data.attention = value;
-				}
-
-				jsonfile.writeFile("grp/"+id, data, function(err){
+				client.HSET('grp'+id, term, value, function(err){
 					if(err)
 					{
 						client.incr('totalErr');
@@ -568,19 +506,17 @@ function getUsrs(callback)
 
 function getGrp(callback)
 {
-
 	getUsrInfo(usrId, function(reqUsr){
 		if(reqUsr != undefined)
 		{
 			if(reqUsr.admin == "true")
 			{
-				fs.readdir("grp/", function (err, files) {
-					if (err) {
-						client.incr('totalErr');
-						client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' tried to list all the groups but couldn\'t reach it');
+				client.lrange("groups", 0, -1, function(err, reply){
+					if(err) {
+						console.log(err);
+						callback(503);
 					}
-					client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font> User '+buUsrId+' listed all groups in system. Result was '+files.length);
-					callback(files)
+					callback(reply);
 				});
 			}
 			else
@@ -604,9 +540,15 @@ function crtUsr(callback)
 				client.hset(par.id, "name", par.name);
 				client.hset(par.id, "id", par.id);
 				client.hset(par.id, "admin", par.admin);
+				client.hset(par.id, "operator", par.op);
+				client.hset(par.id, "staff", par.staff);
+				client.hset(par.id, "user", "true");
 				client.hset(par.id, "pass", pass);
 				client.hset(par.id, "gsm", par.gsm);
 				client.hset(par.id, "email", par.email);
+				client.hset(par.id, "attention", "false");
+				client.hset(par.id, "attentionReason", "undefined");
+				client.hset(par.id, "attentionResponse", "undefined");
 				client.rpush("users", par.id);
 				client.lpush('log', '['+Date()+'] <font class="err">[ADMIN]</font> User '+buUsrId+' Created new user account '+par.id+' for '+par.name);
 				callback(200);
@@ -625,28 +567,17 @@ function crtGrp(callback)
 		getGrp(function(id){
 			if(reqUsr.admin == "true")
 			{
-				id.length++;
-				var grp = {
-					"info" : {
-						"name": par.name.replace(/\+/g, ' '),
-						"location": par.location,
-						"leader": par.leader,
-						"gsm": par.gsm,
-						"id": id.length
-					}
-				};
-				jsonfile.writeFile("grp/"+id.length, grp, function(err){
-					if(err)
-					{
-						client.incr('totalErr');
-						client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>User '+buUsrId+' tried to create new group but couldn\'t do that');
-					}
-					else{
-						client.lpush('log', '['+Date()+'] <font class="err">[ADMIN]</font> User '+buUsrId+' Created new group '+grp.id+' for '+grp.name);
-						callback(200);
-					}
-				});
-
+				id = id.length + 1;
+				console.log(par);
+				client.hset('grp'+id, "name", par.name);
+				client.hset('grp'+id, "id", id);
+				client.hset('grp'+id, "leader", par.leader);
+				client.hset('grp'+id, "description", par.description);
+				client.hset('grp'+id, "location", par.location);
+				client.hset('grp'+id, "gsm", par.gsm);
+				client.rpush("groups", id);
+				client.lpush('log', '['+Date()+'] <font class="err">[ADMIN]</font> User '+buUsrId+' Created new user account '+par.id+' for '+par.name);
+				callback(200);
 			}
 			else
 			{
@@ -736,6 +667,20 @@ function backupCache(callback) {
 				userList.forEach(function(user){
 					client.hgetall(user, function(err, userInfo){
 						jsonfile.writeFile("backup/"+time+"/user"+userInfo.id, userInfo, function(err){
+						});
+					});
+					client.lrange("groups",0,-1, function(err, groups){
+						jsonfile.writeFile("backup/"+time+"/groupList", groups, function(err){
+							groups.forEach(function(group){
+								client.hgetall('grp'+group, function(err, groupInfo){
+									jsonfile.writeFile("backup/"+time+"/group"+groupInfo.id, groupInfo, function(err){
+									});
+								}); 
+							});
+						});
+					});
+					client.hgetall("config", function(err, config){
+						jsonfile.writeFile("backup/"+time+"/config", config, function(err){
 						});
 					});
 				});
@@ -846,28 +791,28 @@ function responder(request, response, next)
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
 		response.write(request.session);
 		response.end();
-		
+
 	};
 	if(par.request == "crtGrp" && resCode != 403)
 	{
 		response.writeHead(301, {"Content-Type: ": "text/plain"});
 		response.write("<a href='/grpMgmt.html?success=true'>Group Saved Click Me to Contiune</a>");
 		response.end();
-		
+
 	};
 	if(par.request == "crtUsr" && resCode != 403)
 	{
 		response.writeHead(301, {"Content-Type: ": "text/plain"});
-		response.write("<a href='/crtUsr.html?success=true'>User Saved Click Me to Contiune</a>");
+		response.write("<script type='text/javascript'>window.location.href = 'crtUsr.html?success=true</script>'");
 		response.end();
-		
+
 	};
 	if(par.request == "log" && resCode == 200)
 	{
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
 		response.write(log.toString());
 		response.end();
-		
+
 	};
 	if(resCode != 200)
 	{
@@ -890,7 +835,7 @@ client.hgetall('config', function(err, config){
 	if(config.resetLoggedInCount == "true") {
 		client.set('loggedInCount', 0);
 	}
-	
+
 	if(config.resetTotalReq == "true") {
 		client.set('totalReq', 0);
 	}
