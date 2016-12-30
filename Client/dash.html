@@ -3,13 +3,47 @@
  <head>
  	<title> KNET DATABASE LINK </title>
  	<link rel="stylesheet" href="/lib/bootstrap.css">
+ 	<link rel="stylesheet" href="/lib/awesome-bootstrap-checkbox.css">
  	<link rel="stylesheet" type="text/css" href="default.css">
  	<link rel="stylesheet" type="text/css" href="links.css">
  	<script src="js/normal.js"></script>
  	<script type="text/javascript" src="/lib/lodash.js"></script>
  	<script src="/lib/jquery/dist/jquery.js"></script>
+ 	<script src="/lib/bootstrap.js"></script>
  </head>
  <body>
+ 	<div class="modal fade" id="backupConfirmation" tabindex="-1" role="dialog" aria-labelledby="backupConfirmation">
+ 		<div class="modal-dialog" role="document">
+ 			<div class="modal-content">
+ 				<div class="modal-header">
+ 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+ 					<h4 class="modal-title" id="myModalLabel">Force Running backup</h4>
+ 				</div>
+ 				<div class="modal-body">
+ 					Running backup outside of timed backup may cause problems if there are two backup running at same time. Also doing this will slow down the system and users will be not informed. Backup will be saved with "forced"-prefix to mark that. Also your user ID will be saved.
+ 				</div>
+ 				<div class="modal-body">
+ 					Make "shadow-backup" so next automatic backup isn't affected by forced one?<br>
+ 					<div class="radio radio-success" style="display:inline"> 
+ 						<input type="radio" name="changeNext" value="true" checked="true">
+ 						<label for="radio3">
+ 							Yes
+ 						</label>
+ 					</div>
+ 					<div class="radio radio-danger" style="display:inline"> 
+ 						<input type="radio" name="changeNext" value="false">
+ 						<label for="radio3">
+ 							No
+ 						</label>
+ 					</div>
+ 				</div>
+ 				<div class="modal-footer">
+ 					<button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+ 					<button type="button" class="btn btn-danger" data-dismiss="modal" data-toggle="collapse" data-target="#manual-backup" onclick="startBackup()">Run Backup Anyway</button>
+ 				</div>
+ 			</div>
+ 		</div>
+ 	</div>
  	<div class="container fixed-margin">
  		<div class="col-md-12">
  			<div id="controls">
@@ -38,9 +72,15 @@
  		<div class="col-md-10">
  			<div class="panel panel-primary fixed-margin">
  				<div class="panel-heading">
- 					<h3 class="panel-title">KNET-DASHBOARD Operator Dashboard</h3>
+ 					<h3 class="panel-title">KNET-DATABASE Operator Dashboard</h3>
  				</div>
  				<div class="panel-body">
+ 					<div class="col-md-12">
+ 						<div class="alert alert-error alert-danger" role="alert" style="display:none" id="alertBox">
+ 							<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+ 							<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span><div style="display:inline" id="reason">undefined</div>
+ 						</div>
+ 					</div>
  					<div class="col-md-6">
  						<div class="panel panel-info fixed-margin">
  							<div class="panel-heading">
@@ -70,20 +110,166 @@
  							<h3 class="panel-title">STATISTICS</h3>
  						</div>
  						<div class="panel-body">
- 							<div class="mini-box">
+ 							<div class="col-md-4 text-center">
  								<span class="label label-danger" style="display:none" id="loggedInUsersBagde">Much users</span>
- 								<h1 id="loggedInUsers" class="mini-box"></span></h1>
+ 								<h1 id="loggedInUsers" class="mini-box"></h1>
  								Currently logged in users
  							</div>
- 							<div class="mini-box">
+ 							<div class="col-md-4 text-center">
  								<span class="label label-danger" style="display:none" id="totalReqBadge">Possible DDOS attack</span>
- 								<h1 id="totalReq" class="mini-box">...</h1>
+ 								<h1 id="totalReq" class="mini-box"></h1>
  								Requests/minute
  							</div>
- 							<div class="mini-box">
+ 							<div class="col-md-4 text-center">
  								<span class="label label-danger" style="display:none" id="totalErrBadge">Server might have a bug</span>
  								<h1 id="totalErr" class="mini-box"></h1>
  								Total erros logged
+ 							</div>
+ 						</div>
+ 					</div>
+ 				</div>
+ 				<div class="col-md-6">
+ 					<div class="panel panel-info" id="backup-panel">
+ 						<div class="panel-heading">
+ 							<h3 class="panel-title">BACKUP STATUS</h3>
+ 						</div>
+ 						<div class="panel-body">
+ 							<div class="col-md-4 text-center">
+ 								<h1 class="mini-box" id="latestBackup">....</h1>
+ 								Latest backup
+ 							</div>
+ 							<div class="col-md-4 text-center">
+ 								<h1 class="mini-box" id="nextBackup">...</h1>
+ 								Next Backup
+ 								<span class='label label-danger' style="display:none" id="backupDiscalimerBadge">Backup service disabled</span>
+ 							</div>
+ 							<div class="col-md-4 text-center">
+ 								<h1 class="mini-box" id="savedBackup">...</h1>
+ 								Currently saved backups
+ 							</div>
+ 							<div class="col-md-12 fixed-margin text-center">
+ 								<button class="btn btn-info" type="button" data-toggle="collapse" data-target="#backup-settings" aria-expanded="false" aria-controls="collapseExample">
+ 									Change Backup Settings
+ 								</button>
+ 								<button class="btn btn-warning" type="button" data-toggle="collapse" data-target="#backup-disclaimer" aria-expanded="false" aria-controls="collapseExample">
+ 									Force run backup
+ 								</button>
+ 							</div>
+ 							<div class="col-md-12">
+ 								<div class="collapse fixed-margin" id="backup-settings">
+ 									<div class="well text-left">
+ 										<form role="form" action="/api" method="GET">
+ 											<input type="hidden" name="origin" value="dashboard">
+ 											<input type="hidden" name="request" value="saveConfig">
+ 											<input type="hidden" name="term" value="backup">
+ 											<span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Defines how often system tries to take a backup automatically. Note that check is triggered only if the system is used at that time!"></span>
+ 											Auto backup interval (in minutes): <input type="number" name="autoBackupInterval" id="autoBackupInterval"/><br>
+ 											<span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" title="Defines does the system take automatic backups. Note that this will over-run the Auto Backup Interval-setting"></span>
+ 											Do automatic backups:
+ 											<div class="radio radio-success" style="display:inline"> 
+ 												<input type="radio" name="doBackup" value="true" id="doBackupTrue">
+ 												<label for="radio3">
+ 													Yes
+ 												</label>
+ 											</div>
+ 											<div class="radio radio-danger" style="display:inline">
+ 												<input type="radio" name="doBackup" value="false" id="doBackupFalse">
+ 												<label for="radio4">
+ 													No
+ 												</label>
+ 											</div>
+ 											<div class="fixed-margin text-center">
+ 												<input type="submit" class="btn btn-warning" value="Save">
+ 											</div>
+ 										</form>
+ 									</div>
+ 								</div>
+ 								<div class="collapse fixed-margin" id="backup-disclaimer">
+ 									<div class="well text-left">
+ 										Force running backup will slow down the system and it will fill up the hdd of your server. Please don't run without good reason!<br>
+ 										<div class="text-center fixed-margin">
+ 											<button class="btn btn-danger" data-toggle="modal" data-target="#backupConfirmation" type="button">
+ 												Force run backup
+ 											</button>
+ 										</div>
+ 									</div>
+ 								</div>
+ 							</div>
+ 						</div>
+ 					</div>
+ 				</div>
+ 				<div class="col-md-12">
+ 					<div class="collapse fixed-margin" id="manual-backup">
+ 						<div class="panel panel-danger" id="manual-backup-panel">
+ 							<div class="panel-heading">
+ 								<h3 class="panel-title">MANUAL BACKUP CONTROL PANEL</h3>
+ 							</div>
+ 							<div class="panel-body">
+ 								<div class="col-md-12">
+ 									<div class="alert alert-error alert-danger" role="alert" id="alertBox">
+ 										<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+ 										<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> DO NOT CLOSE THE WINDOW DURING BACKUP!
+ 									</div>
+ 									<div class="alert  alert-success" role="alert" id="successBox" style="display:none">
+ 										<span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span> Backup Saved. You can close this panel by clicking button at the bottom.
+ 									</div>
+
+ 									<div class="progress">
+ 										<div class="progress-bar progress-bar-warning progress-bar-striped" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="backup-progress-bar" style="width: 0%;"> 		
+ 										</div>
+ 									</div>
+ 									<div class="col-md-3">
+ 										<div class="panel panel-warning" id="backup-progress-waiting">
+ 											<div class="panel-heading">
+ 												<h3 class="panel-title">Initializing backup progress</h3>
+ 											</div>
+ 											<div class="panel-body">
+ 												Sending server backup request. <span class="glyphicon glyphicon-time" aria-hidden="true" id="backup-progress-waiting-1"></span><br>
+ 												Saving forced backup information. <span class="glyphicon glyphicon-time" aria-hidden="true" id="backup-progress-waiting-2"></span><br>
+ 												Waiting for server confimation. <span class="glyphicon glyphicon-time" aria-hidden="true" id="backup-progress-waiting-3"></span><br>
+ 											</div>
+ 										</div>
+ 									</div>
+ 									<div class="col-md-3">
+ 										<div class="panel panel-default" id="backup-progress-users-groups">
+ 											<div class="panel-heading">
+ 												<h3 class="panel-title">Backing Up Users and Groups</h3>
+ 											</div>
+ 											<div class="panel-body">
+ 												Saving users <span class="glyphicon glyphicon-time" aria-hidden="true" id="backup-progress-users-groups-1"></span><br>
+ 												Saving Groups <span class="glyphicon glyphicon-time" aria-hidden="true" id="backup-progress-users-groups-2"></span><br>
+ 											</div>
+ 										</div>
+ 									</div>
+ 									<div class="col-md-3">
+ 										<div class="panel panel-default" id="backup-progress-config">
+ 											<div class="panel-heading">
+ 												<h3 class="panel-title">Backing Up and Valitading Config</h3>
+ 											</div>
+ 											<div class="panel-body">
+ 												Dumping and saving config <span class="glyphicon glyphicon-time" aria-hidden="true" id="backup-progress-config-1"></span><br>
+ 												Validate config <span class="glyphicon glyphicon-time" aria-hidden="true" id="backup-progress-config-2"></span><br>
+ 											</div>
+ 										</div>
+ 									</div>
+ 									<div class="col-md-3">
+ 										<div class="panel panel-default" id="backup-progress-verifying">
+ 											<div class="panel-heading">
+ 												<h3 class="panel-title">Verifying and cleaning</h3>
+ 											</div>
+ 											<div class="panel-body">
+ 												Verifying users <span class="glyphicon glyphicon-time" aria-hidden="true" id="backup-progress-verifying-1"></span><br>
+ 												Verifying groups <span class="glyphicon glyphicon-time" aria-hidden="true" id="backup-progress-verifying-2"></span><br>
+ 												Verifying backup information <span class="glyphicon glyphicon-time" aria-hidden="true" id="backup-progress-verifying-3"></span><br>
+ 											</div>
+ 										</div>
+ 									</div>
+ 									<div class="col-md-12 text-center">
+ 										<button class="btn btn-success" style="display:none" data-toggle="collapse" data-target="#manual-backup" data-hide="true" aria-expanded="false" type="button" id="manual-backup-close-button">
+ 											Close this panel
+ 										</button>
+ 									</div>
+ 								</div>
  							</div>
  						</div>
  					</div>
@@ -96,6 +282,8 @@
  		var att;
  		var isAdmin = false;
  		var renderArr = [];
+ 		var firstRun = true;
+ 		var done = false;
  		function getAdmin(){
  			request("usrPage", "isAdmin", function(admin){
  				if(admin == "true")
@@ -105,6 +293,7 @@
  					isAdmin = true;
  				}
  				getLog();
+ 				checkAlert();
  			});
  		}
  		function getLog() {
@@ -123,36 +312,37 @@
  			dbReq("dashboard", "stats", "loggedInCount", function(reply){
  				document.getElementById('loggedInUsers').innerHTML = formatNumber(reply, ' ');
  				dbReq("dashboard", "stats", "totalReq", function(reply){
- 					document.getElementById("totalReqBadge").style = "display:none"
- 					document.getElementById("statPanel").className = "panel panel-info fixed-margin"
+ 					document.getElementById("totalReqBadge").style = "display:none";
+ 					document.getElementById("statPanel").className = "panel panel-info fixed-margin";
  					if(reply > 500) {
- 						document.getElementById("statPanel").className = "panel panel-warning fixed-margin"
- 						document.getElementById("totalReqBadge").style = "display:absolute"
- 						document.getElementById("totalReqBadge").className = "label label-warning"
- 						document.getElementById("totalReqBadge").innerHTML = "WARNING"
+ 						document.getElementById("statPanel").className = "panel panel-warning fixed-margin";
+ 						document.getElementById("totalReqBadge").style = "display:absolute";
+ 						document.getElementById("totalReqBadge").className = "label label-warning";
+ 						document.getElementById("totalReqBadge").innerHTML = "WARNING";
  						if(reply > 1000) {
- 							document.getElementById("statPanel").className = "panel panel-danger fixed-margin"
- 							document.getElementById("totalReqBadge").style = "display:absolute"
- 							document.getElementById("totalReqBadge").className = "label label-danger"
- 							document.getElementById("totalReqBadge").innerHTML = "DANGER"
+ 							document.getElementById("statPanel").className = "panel panel-danger fixed-margin";
+ 							document.getElementById("totalReqBadge").style = "display:absolute";
+ 							document.getElementById("totalReqBadge").className = "label label-danger";
+ 							document.getElementById("totalReqBadge").innerHTML = "DANGER";
  						}
  					}
  					document.getElementById('totalReq').innerHTML = formatNumber(reply, ' ');
  					dbReq("dashboard", "stats", "totalErr", function(reply){
- 						document.getElementById("totalErrBadge").style = "display:none"
+ 						document.getElementById("totalErrBadge").style = "display:none";
  						if(reply > 50) {
- 							document.getElementById("statPanel").className = "panel panel-warning fixed-margin"
- 							document.getElementById("totalErrBadge").style = "display:absolute"
- 							document.getElementById("totalErrBadge").className = "label label-warning"
- 							document.getElementById("totalErrBadge").innerHTML = "WARNING"
+ 							document.getElementById("statPanel").className = "panel panel-warning fixed-margin";
+ 							document.getElementById("totalErrBadge").style = "display:absolute";
+ 							document.getElementById("totalErrBadge").className = "label label-warning";
+ 							document.getElementById("totalErrBadge").innerHTML = "WARNING";
  						}
  						if(reply > 100) {
- 							document.getElementById("statPanel").className = "panel panel-danger fixed-margin"
- 							document.getElementById("totalErrBadge").style = "display:absolute"
- 							document.getElementById("totalErrBadge").className = "label label-danger"
- 							document.getElementById("totalErrBadge").innerHTML = "DANGER"
+ 							document.getElementById("statPanel").className = "panel panel-danger fixed-margin";
+ 							document.getElementById("totalErrBadge").style = "display:absolute";
+ 							document.getElementById("totalErrBadge").className = "label label-danger";
+ 							document.getElementById("totalErrBadge").innerHTML = "DANGER";
  						}
  						document.getElementById('totalErr').innerHTML = formatNumber(reply, ' ');
+ 						getBackup();
  					});
  				});
  			});
@@ -184,7 +374,124 @@
  				}
 
  			}
-
+ 			function getBackup() {
+ 				dbReq("dashboard", "backupInfo", "all", function(reply){
+ 					reply = JSON.parse(reply);
+ 					reply.latestBackup = reply.latestBackup.split(" ");
+ 					latestTime = ("0" + reply.latestBackup[0]).split(":");
+ 					latestTime.forEach(function(number, index){
+ 						latestTime[index] = ("0" + number).slice(-2);
+ 					});
+ 					reply.nextBackup = reply.nextBackup.split(" ");
+ 					nextTime = ("0" + reply.nextBackup[0]).split(":");
+ 					nextTime.forEach(function(number, index){
+ 						nextTime[index] = ("0" + number).slice(-2);
+ 					});
+ 					document.getElementById('latestBackup').innerHTML = latestTime[0] + ':' + latestTime[1] + "<br>" + "<small>" + reply.latestBackup[1] + "</small>";
+ 					if(reply.doBackup == "false") {
+ 						document.getElementById('nextBackup').innerHTML = "N/A";
+ 						document.getElementById('backupDiscalimerBadge').style = "display:block";
+ 						document.getElementById('backup-panel').className = "panel panel-danger";
+ 					}
+ 					else {
+ 						document.getElementById('nextBackup').innerHTML = nextTime[0] + ':' + nextTime[1] + "<br>" + "<small>" + reply.nextBackup[1] + "</small>";
+ 					}
+ 					document.getElementById('savedBackup').innerHTML = reply.savedBackup + "<br> <small>-</small>";
+ 					if(firstRun) {
+ 						document.getElementById('autoBackupInterval').value = reply.autoBackupInterval;
+ 						if(reply.doBackup == "true") {
+ 							document.getElementById("doBackupTrue").checked = "true";
+ 						}
+ 						if(reply.doBackup == "false") {
+ 							document.getElementById("doBackupFalse").checked = "true";
+ 						}
+ 						firstRun = false;
+ 					}
+ 				});
+ 			}
+ 			function checkAlert() {
+ 				if(getJsonFromUrl().success == "true") {
+ 					document.getElementById("alertBox").style = "display:block";
+ 					document.getElementById("alertBox").className = "alert alert-success";
+ 					console.log(getJsonFromUrl());
+ 					if(getJsonFromUrl().saved == "Backup settings") {
+ 						document.getElementById("reason").innerHTML = " Backup settings updated";
+ 					}
+ 				}
+ 			}
+ 			function startBackup() {
+ 				$("#backup-disclaimer").collapse('hide');
+ 				dbReq("dashboard", "forceBackup", $('input[name="changeNext"]:checked').val(), function(status){
+ 					window.scrollTo(0,document.body.scrollHeight);
+ 					backupPanel();
+ 				});
+ 			}
+ 			function backupPanel() {
+ 				dbReq("dashboard", "backupStatus", "all", function(status){
+ 					status = JSON.parse(status);
+ 					if(status.started == "true") {
+ 						document.getElementById("backup-progress-waiting-1").className = "glyphicon glyphicon-ok green";
+ 					}
+ 					if(status.backupInformationSaved == "true") {
+ 						document.getElementById("backup-progress-waiting-2").className = "glyphicon glyphicon-ok green";
+ 					}
+ 					if(status.backupStarted == "true") {
+ 						document.getElementById("backup-progress-waiting-3").className = "glyphicon glyphicon-ok green";
+ 					}
+ 					if(status.started == "true" && status.backupInformationSaved == "true" && status.backupStarted == "true") {
+ 						document.getElementById("backup-progress-waiting").className = "panel panel-success";
+ 						document.getElementById("backup-progress-users-groups").className = "panel panel-warning";
+ 						document.getElementById("backup-progress-bar").style = "width: 25%";
+ 					}
+ 					if(status.users == "true") {
+ 						document.getElementById("backup-progress-users-groups-1").className = "glyphicon glyphicon-ok green";
+ 					}
+ 					if(status.groups == "true") {
+ 						document.getElementById("backup-progress-users-groups-2").className = "glyphicon glyphicon-ok green";
+ 					}
+ 					if(status.users == "true" && status.groups == "true") {
+ 						document.getElementById("backup-progress-users-groups").className = "panel panel-success";
+ 						document.getElementById("backup-progress-config").className = "panel panel-warning";
+ 						document.getElementById("backup-progress-bar").style = "width: 50%";
+ 					}
+ 					if(status.config == "true") {
+ 						document.getElementById("backup-progress-config-1").className = "glyphicon glyphicon-ok green";
+ 					}
+ 					if(status.configValidate == "true") {
+ 						document.getElementById("backup-progress-config-2").className = "glyphicon glyphicon-ok green";
+ 					}
+ 					if(status.config == "true" && status.configValidate == "true") {
+ 						document.getElementById("backup-progress-config").className = "panel panel-success";
+ 						document.getElementById("backup-progress-verifying").className = "panel panel-warning";
+ 						document.getElementById("backup-progress-bar").style = "width: 75%";
+ 					}
+ 					if(status.usersVerified == "true") {
+ 						document.getElementById("backup-progress-verifying-1").className = "glyphicon glyphicon-ok green";
+ 					}
+ 					if(status.groupsVerified== "true") {
+ 						document.getElementById("backup-progress-verifying-2").className = "glyphicon glyphicon-ok green";
+ 					}
+ 					if(status.overallVerified == "true") {
+ 						document.getElementById("backup-progress-verifying-3").className = "glyphicon glyphicon-ok green";
+ 					}
+ 					if(status.usersVerified == "true" && status.groupsVerified == "true" && status.overallVerified == "true") {
+ 						document.getElementById("backup-progress-verifying").className = "panel panel-success";
+ 						document.getElementById("manual-backup-panel").className = "panel panel-success";
+ 						document.getElementById("backup-progress-bar").style = "width: 100%";
+ 						document.getElementById("backup-progress-bar").className = "progress-bar progress-bar-striped active";
+ 						$("#alertBox").alert("close");
+ 						document.getElementById("successBox").style = "display:block";
+ 						document.getElementById("manual-backup-close-button").style = "display:inline";
+ 						done = true;
+ 					}
+ 					if(!done) {
+ 						setTimeout(function(){
+ 							backupPanel();
+ 						}, 2000);
+ 					}
+ 				});
+ 				
+ 			}
  			function updateDash(){
  				setTimeout(function(){
  					getLog();
@@ -195,5 +502,6 @@
  			getAdmin();
  			updateDash();
  		</script>
+ 		<div class="modal"><!-- Place at bottom of page --></div>
  	</body>
  	</html>

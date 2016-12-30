@@ -9,6 +9,9 @@ client = redis.createClient();
 var _ = require('lodash');
 var mkdirp = require('mkdirp');
 
+fs.exists = fs.exists || require('path').exists;
+fs.existsSync = fs.existsSync || require('path').existsSync;
+
 var crypto = require('crypto'),
 algorithm = 'aes-256-ctr',
 password = 'asdkjkEjkajsdlkasd445446asd';
@@ -22,37 +25,42 @@ var grpInfo;
 var reqId;
 var log;
 var stat;
+var backupInfo;
 function encrypt(text, callback){
-	var cipher = crypto.createCipher(algorithm,password)
-	var crypted = cipher.update(text,'utf8','hex')
+	var cipher = crypto.createCipher(algorithm,password);
+	var crypted = cipher.update(text,'utf8','hex');
 	crypted += cipher.final('hex');
-	callback(crypted)
+	callback(crypted);
 }
 
 function decrypt(text, callback){
 
-	var decipher = crypto.createDecipher(algorithm,password)
-	var dec = decipher.update(text,'hex','utf8')
+	var decipher = crypto.createDecipher(algorithm,password);
+	var dec = decipher.update(text,'hex','utf8');
 	dec += decipher.final('utf8');
 	callback(dec);
 }
 function getPar(request, response, next) //Reads URL parameters to object and saves them to global variable "par"
 {
-	client.hget("config", "autoBackupInterval", function(err, reply) {
-		if(reply != "null") {
-			client.hget("config", "latestBackup", function(err, latest){
-				var d = new Date();
-				if(Number(latest) + Number(reply) < d.getTime()/60000) {
-					backupCache(function(status){
-						console.log("Backing up");
-						client.hset("config", "latestBackup", d.getTime()/60000)
-					})
+	client.hget("config", "doBackup", function(err, reply){
+		if(reply == "true") {
+			client.hget("config", "autoBackupInterval", function(err, reply) {
+				if(reply != "null") {
+					client.hget("config", "latestBackup", function(err, latest){
+						var d = new Date();
+						if(Number(latest) + Number(reply) < d.getTime()/60000) {
+							backupCache(function(status){
+								console.log("Backing up");
+								client.hset("config", "latestBackup", d.getTime()/60000);
+							});
+						}
+					});
 				}
 			});
 		}
 	});
 	par = request.url.slice(2);
-	par = JSON.parse('{"' + decodeURI(par.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}')
+	par = JSON.parse('{"' + decodeURI(par.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}');
 	usrId = request.session.data.user;
 	buUsrId = request.session.data.user;
 	var d = new Date();
@@ -78,7 +86,6 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 
 	if(request.session.data.user != "Guest")
 	{
-
 		if(par.request == "attention")
 		{
 			setAttention(function(code){
@@ -120,7 +127,7 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 							}
 							stat = reply;
 							next();
-						})
+						});
 					}
 				}
 				else {
@@ -128,6 +135,35 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 					next();
 				}
 			});
+		}
+
+		if(par.request == "backupInfo") {
+			getBackupInfo(function(data){
+				backupInfo = data;
+				next();
+			});
+		}
+
+		if(par.request == "backupStatus") {
+			client.hgetall("fbackup", function(err, status){
+				resCode = status;
+				next();
+			});
+		}
+
+		if(par.request == "saveConfig") {
+			saveConfig(par, function(data){
+				resCode = data;
+				next();
+			});
+		}
+
+		if(par.request == "forceBackup") {
+			console.log("FORCE REQUEST");
+			client.hset("fbackup", "started", "true");
+			backupCache(function(data){console.log(data);});
+			resCode = "200";
+			next();
 		}
 
 		if(par.request == "getAttention")
@@ -219,12 +255,11 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 				next();
 			});
 		}
-
 		if(par.origin == "usrPage")
 		{
 			if(par.request == "usrName" || par.request == "usrInfo")
 			{
-				if(par.usrId != undefined) {
+				if(par.usrId !== undefined) {
 					getUsrInfo(par.usrId, function(callback){
 						usrInfo = callback;
 						next();		
@@ -357,7 +392,7 @@ function getGrpInfo(id, callback)
 				client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>'+err);
 				callback(503);
 			}
-			if(grpInfo != undefined)
+			if(grpInfo !== undefined)
 			{
 				if(usr.admin == "true" || grpInfo.leader == usr.id) {
 					client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font>User '+buUsrId+' requested group info for group '+grpInfo.name);
@@ -392,7 +427,7 @@ function changeUsrInfo(term, value, id, callback)
 
 				if(term == "attentionResponse")
 				{
-					if(value != undefined) {
+					if(value !== undefined) {
 						value = value.replace(/%3F/g, "?");
 					}
 				}
@@ -410,7 +445,7 @@ function changeUsrInfo(term, value, id, callback)
 				});
 			}
 		});
-	})
+	});
 }
 
 function changeGrpInfo(term, value, id, callback)
@@ -431,7 +466,7 @@ function changeGrpInfo(term, value, id, callback)
 				});
 			}
 		});
-	})
+	});
 }
 
 function checkLogin(callback) //Needs somekind of lock function for encryptor but not big deal yet
@@ -440,9 +475,9 @@ function checkLogin(callback) //Needs somekind of lock function for encryptor bu
 		if (err) {
 			client.incr('totalErr');
 			client.lpush('log', '['+Date()+'] <font class="err">[ERR]</font>System tried access "/cred" but FS gave error: '+err);
-			callback(403)
+			callback(403);
 		}
-		if(usrInfo != undefined)
+		if(usrInfo !== undefined)
 		{
 			encrypt(par.pass, function(usrPass){
 				if(usrPass == usrInfo.pass && usrInfo.user == "true")
@@ -454,10 +489,10 @@ function checkLogin(callback) //Needs somekind of lock function for encryptor bu
 					if(usrInfo.user != "true")
 					{
 						callback(410);
-						console.log(usrInfo.name + " tried to log in with disabled account!")
+						console.log(usrInfo.name + " tried to log in with disabled account!");
 					}
 					callback(403);
-					console.log(par.id+" had wrong password")
+					console.log(par.id+" had wrong password");
 				}
 			});
 		}
@@ -471,14 +506,14 @@ function checkLogin(callback) //Needs somekind of lock function for encryptor bu
 
 function toArray(data, callback)
 {
-	var data = data.toString().split('\n');
-	callback(data)
+	data = data.toString().split('\n');
+	callback(data);
 }
 
 function getUsrs(callback)
 {
 	getUsrInfo(usrId, function(reqUsr){
-		if(reqUsr != undefined)
+		if(reqUsr !== undefined)
 		{
 			if(reqUsr.admin == "true")
 			{
@@ -489,7 +524,7 @@ function getUsrs(callback)
 					}
 					client.lpush('log', '['+Date()+'] <font class="admin">[ADMIN]</font> User '+buUsrId+' listed all users in system. Result was '+files.length);
 					console.log(files);
-					callback(files)
+					callback(files);
 				});
 			}
 			else
@@ -507,7 +542,7 @@ function getUsrs(callback)
 function getGrp(callback)
 {
 	getUsrInfo(usrId, function(reqUsr){
-		if(reqUsr != undefined)
+		if(reqUsr !== undefined)
 		{
 			if(reqUsr.admin == "true")
 			{
@@ -594,9 +629,9 @@ function setAttention(callback)
 		{
 			usrInfo = code;
 			client.lpush('log', '['+Date()+'] User '+buUsrId+' set attention request.');
-			client.hset(usrId, "attention", "true")
-			client.hset(usrId, "attentionReason", par.comment.replace(/%3F/g, "?"))
-			client.hset(usrId, "attentionResponse", "undefined")
+			client.hset(usrId, "attention", "true");
+			client.hset(usrId, "attentionReason", par.comment.replace(/%3F/g, "?"));
+			client.hset(usrId, "attentionResponse", "undefined");
 			callback(200);
 		}
 	});
@@ -658,29 +693,96 @@ function backupCache(callback) {
 		if(err) {
 			console.log(err);
 		}
-		var time = Date();
+		if(par.request == "forceBackup") {
+			getUsrInfo(usrId, function(user){
+				if(user.operator != "true") {
+					callback(403);
+				}
+				else {
+					jsonfile.writeFile("backup/"+time+"/FORCE_BACKUP_INFO", user, function(err){
+						client.hset("fbackup", "backupInformationSaved", "true");
+					});
+				}
+			});
+		}
+		var time = new Date();
+		console.log(par.term);
+		if(par.term !== "true") {
+			client.hset("config", "latestBackup", time.getTime()/60000);       
+		}
+		console.log("BACK UP");
+		client.hset("fbackup", "backupStarted", "true");
 		mkdirp('backup/'+time+'/', function(err) { 
 			if(err) {
 				console.log(err);
 			}
 			jsonfile.writeFile("backup/"+time+"/userList", userList, function(err){
-				userList.forEach(function(user){
+				userList.forEach(function(user, index){
+					client.hset("fbackup", "users", "true");
 					client.hgetall(user, function(err, userInfo){
 						jsonfile.writeFile("backup/"+time+"/user"+userInfo.id, userInfo, function(err){
 						});
+						if(index+1 == userList.length) {
+							if(par.request == "forceBackup") {
+								userList.forEach(function(userVer, index){
+									fs.readFile("backup/"+time+"/user"+Number(userVer), 'utf8', function (err, data) {
+										if(data !== undefined)
+										{
+											var verificationConfig = JSON.parse(data);
+											client.hget(verificationConfig.id, "id", function(err, reply){
+												if(verificationConfig.id == reply) {
+													client.hset("fbackup", "usersVerified", "true");
+												}
+											});
+										}
+									});
+								});
+							}
+						}
 					});
 					client.lrange("groups",0,-1, function(err, groups){
 						jsonfile.writeFile("backup/"+time+"/groupList", groups, function(err){
 							groups.forEach(function(group){
+								client.hset("fbackup", "groups", "true");
 								client.hgetall('grp'+group, function(err, groupInfo){
 									jsonfile.writeFile("backup/"+time+"/group"+groupInfo.id, groupInfo, function(err){
 									});
+									if(index+1 == userList.length) {
+										if(par.request == "forceBackup") {
+											groups.forEach(function(groupVer, index){
+												fs.readFile("backup/"+time+"/group"+Number(groupVer), 'utf8', function (err, data) {
+													if(data !== undefined)
+													{
+														var verificationGroup = JSON.parse(data);
+														client.hget('grp'+verificationGroup.id, "id", function(err, reply){
+															if(verificationGroup.id == reply) {
+																client.hset("fbackup", "groupsVerified", "true");
+															}
+														});
+													}
+												});
+											});
+										}
+									}
 								}); 
 							});
 						});
 					});
 					client.hgetall("config", function(err, config){
 						jsonfile.writeFile("backup/"+time+"/config", config, function(err){
+							client.hset("fbackup", "config", "true");
+							if(par.request == "forceBackup") {
+								fs.readFile("backup/"+time+"/config", 'utf8', function (err, data) {
+									if(data !== undefined)
+									{
+										var verificationConfig = JSON.parse(data);
+										if(verificationConfig.doBackup == config.doBackup) {
+											client.hset("fbackup", "configValidate", "true");
+											client.hset("fbackup", "overallVerified", "true");
+										}
+									}
+								});
+							}
 						});
 					});
 				});
@@ -688,6 +790,50 @@ function backupCache(callback) {
 		});
 	});
 	callback(200);
+}
+
+function getBackupInfo(callback) {
+	var response = new Object();
+	getUsrInfo(usrId, function(usrData){
+		if(usrData.operator == "true") {
+			client.hgetall("config", function(err, reply){
+				if(err) {
+					console.log(err);
+				}
+				reply.latestBackup = reply.latestBackup * 60000;
+				var latest = new Date(reply.latestBackup);
+				var next = new Date(Number(reply.latestBackup) + Number(reply.autoBackupInterval)*60000);
+				var yearLatest = latest.getYear() + 1900;
+				console.log(latest.getMonth());
+				var yearNext = next.getYear() + 1900;
+				response.latestBackup = latest.getHours() + ':' + latest.getMinutes() + ' ' + latest.getDate() + '/' + (latest.getMonth() + 1)+ '/' + yearLatest;
+				response.nextBackup = next.getHours() + ':' + next.getMinutes() + ' ' + next.getDate() + '/' + (next.getMonth() + 1) + '/' + yearNext;
+				fs.readdir('backup', function(err, backups){
+					response.savedBackup = backups.length;
+					response.autoBackupInterval = reply.autoBackupInterval;
+					response.doBackup = reply.doBackup;
+					callback(response);
+				});
+			});
+		}
+		else {
+			callback(403);
+		}
+	});
+}
+
+function saveConfig(parameters, callback) {
+	getUsrInfo(usrId, function(usrInfo){
+		if(usrInfo.operator == "true") {
+			if(parameters.term == "backup") {
+				client.hmset("config", "autoBackupInterval", parameters.autoBackupInterval, "doBackup", parameters.doBackup);
+				callback(200);
+			}
+		}
+		else {
+			callback(403);
+		}
+	});
 }
 
 function responder(request, response, next)
@@ -712,6 +858,34 @@ function responder(request, response, next)
 	{
 		response.writeHead(resCode, {"Content-Type: ": "text/plain"});
 		response.write(JSON.stringify(usrInfo));
+		next();
+	}
+	if(par.request == "backupInfo")
+	{
+		response.writeHead(200, {"Content-Type: ": "text/plain"});
+		response.write(JSON.stringify(backupInfo));
+		resCode = 200;
+		next();
+	}
+	if(par.request == "backupStatus" && resCode != 403)
+	{
+		response.writeHead(200, {"Content-Type: ": "text/plain"});
+		response.write(JSON.stringify(resCode));
+		resCode = 200;
+		next();
+	}
+	if(par.request == "forceBackup")
+	{
+		response.writeHead(200, {"Content-Type: ": "text/plain"});
+		response.write(resCode);
+		resCode = 200;
+		next();
+	}
+	if(par.request == "saveConfig" && resCode != 403)
+	{
+		response.writeHead(200, {"Content-Type: ": "text/plain"});
+		response.write("<script type='text/javascript'>window.location.href = 'dash.html?success=true&saved=Backup%20settings'</script>");
+		resCode = 200;
 		next();
 	}
 	if(par.request == "stats")
@@ -792,28 +966,28 @@ function responder(request, response, next)
 		response.write(request.session);
 		response.end();
 
-	};
+	}
 	if(par.request == "crtGrp" && resCode != 403)
 	{
 		response.writeHead(301, {"Content-Type: ": "text/plain"});
 		response.write("<a href='/grpMgmt.html?success=true'>Group Saved Click Me to Contiune</a>");
 		response.end();
 
-	};
+	}
 	if(par.request == "crtUsr" && resCode != 403)
 	{
 		response.writeHead(301, {"Content-Type: ": "text/plain"});
 		response.write("<script type='text/javascript'>window.location.href = 'crtUsr.html?success=true</script>'");
 		response.end();
 
-	};
+	}
 	if(par.request == "log" && resCode == 200)
 	{
 		response.writeHead(200, {"Content-Type: ": "text/plain"});
 		response.write(log.toString());
 		response.end();
 
-	};
+	}
 	if(resCode != 200)
 	{
 		response.writeHead(resCode, {"Content-Type: ": "text/plain"});
@@ -840,8 +1014,8 @@ client.hgetall('config', function(err, config){
 		client.set('totalReq', 0);
 	}
 	if(config.resetTotalErr == "true") {
-		client.set('totalErr', 0)
-	};
+		client.set('totalErr', 0);
+	}
 
 	http.createServer(app).listen(8000);
 	console.log("Server is running On port 8000");

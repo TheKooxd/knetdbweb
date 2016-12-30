@@ -1,7 +1,6 @@
 	var api = "http://knet.kcorporation.tk/api";
 	var _ = "lodash.js"
-	
-	
+
 	function logout()
 	{
 
