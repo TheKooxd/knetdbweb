@@ -10,7 +10,7 @@
  	<script src="/lib/bootstrap.js"></script>
  </head>
  <body>
- 	 	<div class="container fixed-margin">
+ 	<div class="container fixed-margin">
  		<div class="col-md-12">
  			<div id="controls">
  				<button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
@@ -20,206 +20,241 @@
  			</div>
  		</div>
  		<div class="col-md-12">
- 	<div id="header">
- 		<h1>\\KNET DATABASE></h1>
+ 			<div id="header">
+ 				<h1>\\KNET DATABASE></h1>
 
- 		<h7 id="path" class="locText">\\DATABASE\\USER_MANAGMENT\USER_OVERVIEW\USER_LIST\USER_INFO</h7>
- 	</div>
- 	<ul class="nav well">
- 		<li class="nav"><a href="user.html">Front Page</a></li>
- 		<li class="nav"><a href="database.html">Database</a></li>
- 		<li class="nav "><a href="usr.html">User Info</a></li>
- 		<li class="nav active" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
- 		<ul class="">
- 			<li class="nav"><a href="usrMgmt.html">User Overview</a></li>
- 			<li class="nav"><a href="searchUsr.html">Search Users</a></li>
- 			<li class="nav"><a href="crtUsr.html">Create Users</a></li>
- 			<li class="nav active"><a href="grpMgmt.html">Group Managment</a></li>
- 			<ul class="">
- 				<li class="nav active"><a href="grpMgmt.html">Group List</a></li>
- 				<li class="nav"><a href="crtGrp.html">Create Croup</a></li>
+ 				<h7 id="path" class="locText">\\DATABASE\\USER_MANAGMENT\USER_OVERVIEW\USER_LIST\USER_INFO</h7>
+ 			</div>
+ 			<ul class="nav well">
+ 				<li class="nav">
+ 					<a href="user.html">
+ 						<span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+ 						Front Page
+ 					</a>
+ 				</li>
+ 				<li class="nav">
+ 					<a href="database.html">
+ 						<span class="glyphicon glyphicon-folder-close" aria-hidden="true"></span>
+ 						Database
+ 					</a>
+ 				</li>
+ 				<li class="nav">
+ 					<a href="usr.html">
+ 						<span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+ 						User Info
+ 					</a>
+ 				</li>
+ 				<li class="nav active">
+ 					<a href="grpMgmt.html">
+ 						<span class="glyphicon glyphicon-blackboard" aria-hidden="true"></span>
+ 						Group Managment
+ 					</a>
+ 				</li>
+ 				<ul class="">
+ 					<li class="nav active">
+ 						<a href="grpMgmt.html">
+ 							<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+ 							Group List
+ 						</a>
+ 					</li>
+ 					<li class="nav">
+ 						<a href="crtGrp.html">
+ 							+<span class="glyphicon glyphicon-blackboard" aria-hidden="true"></span>
+ 							Create Croup
+ 						</a>
+ 					</li>
+ 				</ul>
+ 				<li class="nav" id="um" style="display:none">
+ 					<a href="usrMgmt.html">
+ 						<span class="glyphicon glyphicon-briefcase" aria-hidden="true"></span>
+ 						User Managment
+ 					</a>
+ 				</li>
+ 				<li class="nav" id="dash" style="display:none">
+ 					<a href="dash.html">
+ 						<span class="glyphicon glyphicon-dashboard" aria-hidden="true"></span>
+ 						Dashboard
+ 					</a>
+ 				</li>
  			</ul>
- 		</ul>
- 		<li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
- 	</ul>
- 	<div id="content">
- 		<h2 id="userWelcome"> Crunching Data </h2>
- 		<hr>
- 		<div class="inv-box">
- 			<h3>General Information</h3>
- 			<hr>
- 			ID:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input class="classy" type="text" disabled="" id="id"> <br><br>
- 			Location: <input class="classy" type="text" disabled="" id="location"> <br> <br>
- 			Leader:&nbsp;&nbsp;&nbsp; <input class="classy" type="text" disabled="" id="leader"> <br> <br>
- 			GSM:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input class="classy" type="text" disabled="" id="gsm"> <br> <br>
- 			<br>
- 			<input id="generalSaveBtt" type='button' class='btn btn-success' value='Save'  onclick="saveGeneral()">
- 		</div>
- 		<div class="inv-box">
- 			<h3>Members</h3>
- 			<hr>
- 			<table class='table table-hover' id="memberTbl">
- 			</table>
- 		</div>
- 		<div class="inv-box">
- 			<h3>Description</h3>
- 			<hr>
- 			<textarea disabled="" class="classy" id="description" rows="10" cols="50">
- 			</textarea>
- 		</div>
- 	</div>
- </body>
- <script type="text/javascript">
- 	var att;
- 	var locPath = "<div class = 'wrapper'><a class = 'cool third after' href='user.html'>\\\DATABASE</a><a class = 'cool third after' href = 'usrMgmt.html'>\\\USER_MANAGMENT</a><a class = 'cool third after' href = 'usrMgmt.html'>\\USER_OVERVIEW</a><a class = 'cool third after' href = 'usrList.html'>\\USER_LIST</a>\\USER_INFO";
- 	var request;
- 	var write;
- 	var adminStatus;
- 	var usr;
- 	var par = window.location.href.slice(41);
- 	par = JSON.parse('{"' + decodeURI(par.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}')
- 	var api = "http://knet.kcorporation.tk/api";
- 	var write = "<tr id='usrTr'><th>ID</th><th>Name</th><th>Creation date</th></tr>";
- 	var usrName;
- 	function getAdmin(){
- 		request("usrPage", "isAdmin", function(admin){
- 			adminStatus = admin;
- 			if(admin == "true")
- 			{
- 				document.getElementById("dash").style = "display:block";
- 				document.getElementById("um").style = "display:block";
-
- 			}
- 			getAttention();
- 		});
- 	}
- 	function getAttention()
- 	{
- 		grpReq("grpMgr", "grpInfo", par.grpId, function(arr){
- 			request("usrPage", "usrInfo", function(usrCall){
- 				att = JSON.parse(arr);
- 				usr = JSON.parse(usrCall);
- 				document.getElementById("userWelcome").innerHTML = "Group Information for: "+att.name.replace("+", " ");
- 				document.getElementById("id").value = att.id;
- 				document.getElementById("location").value = att.location.replace(/%2F/g, '/');
- 				document.getElementById("gsm").value = att.gsm;
- 				document.getElementById("leader").value = att.leader;
- 				document.getElementById("description").value = att.description
- 				console.log("usr");
- 				if(usr.id == att.leader)
- 				{
- 					document.getElementById("id").disabled = false;
- 					document.getElementById("gsm").disabled = false;
- 					document.getElementById("leader").disabled = false;
- 					document.getElementById("location").disabled = false;
- 					document.getElementById("description").disabled = false;
- 				}
-
- 				if(att.admin == "true")
- 				{
- 					document.getElementById("admin").className = "btn btn-warning active";
- 					document.getElementById("admin").value = "ADMIN";
- 				}
- 				if(att.operator == "true")
- 				{
- 					document.getElementById("op").className = "btn btn-danger active";
- 					document.getElementById("op").value = "OPERATOR";
- 				}
- 				if(att.staff == "true")
- 				{
- 					document.getElementById("staff").className = "btn btn-info active";
- 					document.getElementById("staff").value = "STAFF";
- 				}
- 				if(att.user == "true")
- 				{
- 					document.getElementById("user").className = "btn btn-Success active";
- 					document.getElementById("user").value = "USER";
- 				}
- 				if(att.attention == "true")
- 				{
- 					document.getElementById('attDiv').style = "display:inline";
- 					document.getElementById('attentionMsg').disabled = false;
- 					document.getElementById('attentionMsg').value = att.attentionReason.replace(/\+/g, " ");
- 				}
- 				getMembers();
- 			});
- 		});
-
- 	}
- 	function getMembers()
- 	{
- 		request("usrMgr", "totalUsers", function(usrArr){
- 			var usrArr = usrArr.split(',');
- 			var index = usrArr.length;
- 			usrArr.forEach(function(usr){
- 				usrReq("usrPage", "usrInfo", usr, function(usrInfo){
- 					usrInfo = JSON.parse(usrInfo);
- 					if(usrInfo.group == att.name)
+ 			<div id="content">
+ 				<h2 id="userWelcome"> Crunching Data </h2>
+ 				<hr>
+ 				<div class="inv-box">
+ 					<h3>General Information</h3>
+ 					<hr>
+ 					ID:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input class="classy" type="text" disabled="" id="id"> <br><br>
+ 					Location: <input class="classy" type="text" disabled="" id="location"> <br> <br>
+ 					Leader:&nbsp;&nbsp;&nbsp; <input class="classy" type="text" disabled="" id="leader"> <br> <br>
+ 					GSM:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input class="classy" type="text" disabled="" id="gsm"> <br> <br>
+ 					<br>
+ 					<input id="generalSaveBtt" type='button' class='btn btn-success' value='Save'  onclick="saveGeneral()">
+ 				</div>
+ 				<div class="inv-box">
+ 					<h3>Members</h3>
+ 					<hr>
+ 					<table class='table table-hover' id="memberTbl">
+ 					</table>
+ 				</div>
+ 				<div class="inv-box">
+ 					<h3>Description</h3>
+ 					<hr>
+ 					<textarea disabled="" class="classy" id="description" rows="10" cols="50">
+ 					</textarea>
+ 				</div>
+ 			</div>
+ 		</body>
+ 		<script type="text/javascript">
+ 			var att;
+ 			var locPath = "<div class = 'wrapper'><a class = 'cool third after' href='user.html'>\\\DATABASE</a><a class = 'cool third after' href = 'usrMgmt.html'>\\\USER_MANAGMENT</a><a class = 'cool third after' href = 'usrMgmt.html'>\\USER_OVERVIEW</a><a class = 'cool third after' href = 'usrList.html'>\\USER_LIST</a>\\USER_INFO";
+ 			var request;
+ 			var write;
+ 			var adminStatus;
+ 			var usr;
+ 			var par = window.location.href.slice(41);
+ 			par = JSON.parse('{"' + decodeURI(par.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}')
+ 			var api = "http://knet.kcorporation.tk/api";
+ 			var write = "<tr id='usrTr'><th>ID</th><th>Name</th><th>Creation date</th></tr>";
+ 			var usrName;
+ 			function getAdmin(){
+ 				request("usrPage", "isAdmin", function(admin){
+ 					adminStatus = admin;
+ 					if(admin == "true")
  					{
- 						write = write + "<tr id='grpTr'><td><a href='usrInfo.html?usrId="+usrInfo.id+"'>"+ usrInfo.id +"</a></td></a><td>"+ usrInfo.name.replace('+', ' ') +"</td><td>n/a</td></tr>"
+ 						document.getElementById("dash").style = "display:block";
+ 						document.getElementById("um").style = "display:block";
+
  					}
- 					index--;
- 					if(index == 0)
- 					{
- 						render();
- 					}
- 				});
- 			});
- 		});
- 	}
-
- 	function render()
- 	{
- 		document.getElementById("memberTbl").innerHTML = write;
- 	}
-
- 	function removeAttForce()
- 	{
- 		alert("ATTENTION! REMOVING THE NOTICE WITHOUT MESSAGE WILL DELETE THE CASE AND REMOVE THE NOTICE!");
- 		document.getElementById("removeAttBtt").disabled = "true";
- 		document.getElementById("forceRmvBtt").style = "display:inline";
- 	}
-
- 	function removeAtt()
- 	{
- 		changeUsrInfo("attention", "false", att.id, function(status){
- 			window.location.reload();
- 		});
- 	}
-
- 	function openAttResponse()
- 	{
- 		document.getElementById("responseDiv").style = "display:inline";
- 	}
-
- 	function sendResponse()
- 	{
- 		changeUsrInfo("attentionResponse", document.getElementById('answerText').value, att.id, function(status){
- 			if(!document.getElementById("keepAttention").checked)
- 			{
- 				changeUsrInfo("attention", "false", att.id, function(status){
-
+ 					getAttention();
  				});
  			}
- 			window.location.reload();
- 		});
- 	}
+ 			function getAttention()
+ 			{
+ 				grpReq("grpMgr", "grpInfo", par.grpId, function(arr){
+ 					request("usrPage", "usrInfo", function(usrCall){
+ 						att = JSON.parse(arr);
+ 						usr = JSON.parse(usrCall);
+ 						document.getElementById("userWelcome").innerHTML = "Group Information for: "+att.name.replace("+", " ");
+ 						document.getElementById("id").value = att.id;
+ 						document.getElementById("location").value = att.location.replace(/%2F/g, '/');
+ 						document.getElementById("gsm").value = att.gsm;
+ 						document.getElementById("leader").value = att.leader;
+ 						document.getElementById("description").value = att.description
+ 						console.log("usr");
+ 						if(usr.id == att.leader)
+ 						{
+ 							document.getElementById("id").disabled = false;
+ 							document.getElementById("gsm").disabled = false;
+ 							document.getElementById("leader").disabled = false;
+ 							document.getElementById("location").disabled = false;
+ 							document.getElementById("description").disabled = false;
+ 						}
 
- 	function saveGeneral()
- 	{
- 		changeGrpInfo("id", document.getElementById('id').value, att.id, function(status){
- 			changeGrpInfo("location", document.getElementById("location").value, att.id, function(status){
- 				changeGrpInfo("leader", document.getElementById("leader").value, att.id, function(status){
- 					changeGrpInfo("gsm", document.getElementById("gsm").value, att.id, function(status){
- 						changeGrpInfo("description", document.getElementById("description").value, att.id, function(status){
- 							window.location.reload();
+ 						if(att.admin == "true")
+ 						{
+ 							document.getElementById("admin").className = "btn btn-warning active";
+ 							document.getElementById("admin").value = "ADMIN";
+ 						}
+ 						if(att.operator == "true")
+ 						{
+ 							document.getElementById("op").className = "btn btn-danger active";
+ 							document.getElementById("op").value = "OPERATOR";
+ 						}
+ 						if(att.staff == "true")
+ 						{
+ 							document.getElementById("staff").className = "btn btn-info active";
+ 							document.getElementById("staff").value = "STAFF";
+ 						}
+ 						if(att.user == "true")
+ 						{
+ 							document.getElementById("user").className = "btn btn-Success active";
+ 							document.getElementById("user").value = "USER";
+ 						}
+ 						if(att.attention == "true")
+ 						{
+ 							document.getElementById('attDiv').style = "display:inline";
+ 							document.getElementById('attentionMsg').disabled = false;
+ 							document.getElementById('attentionMsg').value = att.attentionReason.replace(/\+/g, " ");
+ 						}
+ 						getMembers();
+ 					});
+ 				});
+
+ 			}
+ 			function getMembers()
+ 			{
+ 				request("usrMgr", "totalUsers", function(usrArr){
+ 					var usrArr = usrArr.split(',');
+ 					var index = usrArr.length;
+ 					usrArr.forEach(function(usr){
+ 						usrReq("usrPage", "usrInfo", usr, function(usrInfo){
+ 							usrInfo = JSON.parse(usrInfo);
+ 							if(usrInfo.group == att.name)
+ 							{
+ 								write = write + "<tr id='grpTr'><td><a href='usrInfo.html?usrId="+usrInfo.id+"'>"+ usrInfo.id +"</a></td></a><td>"+ usrInfo.name.replace('+', ' ') +"</td><td>n/a</td></tr>"
+ 							}
+ 							index--;
+ 							if(index == 0)
+ 							{
+ 								render();
+ 							}
  						});
  					});
  				});
- 			});
- 		});
- 	}
+ 			}
 
- 	getAdmin();
- </script>
- </html>
+ 			function render()
+ 			{
+ 				document.getElementById("memberTbl").innerHTML = write;
+ 			}
+
+ 			function removeAttForce()
+ 			{
+ 				alert("ATTENTION! REMOVING THE NOTICE WITHOUT MESSAGE WILL DELETE THE CASE AND REMOVE THE NOTICE!");
+ 				document.getElementById("removeAttBtt").disabled = "true";
+ 				document.getElementById("forceRmvBtt").style = "display:inline";
+ 			}
+
+ 			function removeAtt()
+ 			{
+ 				changeUsrInfo("attention", "false", att.id, function(status){
+ 					window.location.reload();
+ 				});
+ 			}
+
+ 			function openAttResponse()
+ 			{
+ 				document.getElementById("responseDiv").style = "display:inline";
+ 			}
+
+ 			function sendResponse()
+ 			{
+ 				changeUsrInfo("attentionResponse", document.getElementById('answerText').value, att.id, function(status){
+ 					if(!document.getElementById("keepAttention").checked)
+ 					{
+ 						changeUsrInfo("attention", "false", att.id, function(status){
+
+ 						});
+ 					}
+ 					window.location.reload();
+ 				});
+ 			}
+
+ 			function saveGeneral()
+ 			{
+ 				changeGrpInfo("id", document.getElementById('id').value, att.id, function(status){
+ 					changeGrpInfo("location", document.getElementById("location").value, att.id, function(status){
+ 						changeGrpInfo("leader", document.getElementById("leader").value, att.id, function(status){
+ 							changeGrpInfo("gsm", document.getElementById("gsm").value, att.id, function(status){
+ 								changeGrpInfo("description", document.getElementById("description").value, att.id, function(status){
+ 									window.location.reload();
+ 								});
+ 							});
+ 						});
+ 					});
+ 				});
+ 			}
+
+ 			getAdmin();
+ 		</script>
+ 		</html>

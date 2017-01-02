@@ -8,7 +8,7 @@
  	<script src="js/normal.js"></script>
  </head>
  <body>
- 	 	<div class="container fixed-margin">
+ 	<div class="container fixed-margin">
  		<div class="col-md-12">
  			<div id="controls">
  				<button type="button" class="btn btn-default" aria-label="Left Align" onclick="location.href='help.html'">
@@ -18,49 +18,80 @@
  			</div>
  		</div>
  		<div class="col-md-12">
- 	<div id="header">
- 		<h1>\\KNET DATABASE></h1>
-
- 		<h7 id="path" class="locText"><div class = 'wrapper'><a class = 'cool third after' href='user.html'>\DATABASE</a><a class = 'cool third after' href = 'help.html'>\HELP</a></h7>
+ 			<div id="header">
+ 				<h1>\\KNET DATABASE></h1>
+ 				<h7 id="path" class="locText"><div class = 'wrapper'><a class = 'cool third after' href='user.html'>\DATABASE</a><a class = 'cool third after' href = 'help.html'>\HELP</a></h7>
+ 			</div>
+ 		</div>
+ 		<ul class="nav well">
+ 			<li class="nav">
+ 				<a href="user.html">
+ 					<span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+ 					Front Page
+ 				</a>
+ 			</li>
+ 			<li class="nav">
+ 				<a href="database.html">
+ 					<span class="glyphicon glyphicon-folder-close" aria-hidden="true"></span>
+ 					Database
+ 				</a>
+ 			</li>
+ 			<li class="nav">
+ 				<a href="usr.html">
+ 					<span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+ 					User Info
+ 				</a>
+ 			</li>
+ 			<li class="nav">
+ 				<a href="grpMgmt.html">
+ 					<span class="glyphicon glyphicon-blackboard" aria-hidden="true"></span>
+ 					Group Managment
+ 				</a>
+ 			</li>
+ 			<li class="nav" id="um" style="display:none">
+ 				<a href="usrMgmt.html">
+ 					<span class="glyphicon glyphicon-briefcase" aria-hidden="true"></span>
+ 					User Managment
+ 				</a>
+ 			</li>
+ 			<li class="nav" id="dash" style="display:none">
+ 				<a href="dash.html">
+ 					<span class="glyphicon glyphicon-dashboard" aria-hidden="true"></span>
+ 					Dashboard
+ 				</a>
+ 			</li>
+ 		</ul>
+ 		<div id="content">
+ 			<h2 id="userWelcome"> HELP </h2>
+ 			<hr>
+ 			To get admin help fill in the form and click this button: 
+ 			<input type="hidden" name="request" value="attention"><br>
+ 			<textarea rows="20" cols="150" id="comment" name="comment" placeholder="Enter text here..."></textarea><br>
+ 			<input type="button" class="btn btn-info" value="Set help request" onclick="getSomeHelp()">
+ 		</div>
  	</div>
- </div>
- <ul class="nav well">
- 	<li class="nav"><a href="user.html">Front Page</a></li>
- 	<li class="nav"><a href="database.html">Database</a></li>
- 	<li class="nav "><a href="usr.html">User Info</a></li>
- 	<li class="nav" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
- 	<li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
- </ul>
- <div id="content">
- 	<h2 id="userWelcome"> HELP </h2>
- 	<hr>
- 	To get admin help fill in the form and click this button: 
- 	<input type="hidden" name="request" value="attention"><br>
- 	<textarea rows="20" cols="150" id="comment" name="comment" placeholder="Enter text here..."></textarea><br>
- 	<input type="button" class="btn btn-info" value="Set help request" onclick="getSomeHelp()">
- </div>
-</body>
-<script src="/lib/jquery/dist/jquery.js"></script>
-<script type="text/javascript">
-	var api = "http://knet.kcorporation.tk/api";
-	function getAdmin(){
-		request("usrPage", "isAdmin", function(admin){
-			console.log(admin);
-			if(admin == "true")
-			{
-				document.getElementById("dash").style = "display:block";
-				document.getElementById("um").style = "display:block";
-			}
-		});
-	}
+ </body>
+ <script src="/lib/jquery/dist/jquery.js"></script>
+ <script type="text/javascript">
+ 	var api = "http://knet.kcorporation.tk/api";
+ 	function getAdmin(){
+ 		request("usrPage", "isAdmin", function(admin){
+ 			console.log(admin);
+ 			if(admin == "true")
+ 			{
+ 				document.getElementById("dash").style = "display:block";
+ 				document.getElementById("um").style = "display:block";
+ 			}
+ 		});
+ 	}
 
-	function getSomeHelp() {
-		console.log(JSON.stringify(document.getElementById("comment").value));
-		setAttention("help", "attention", JSON.stringify(document.getElementById("comment").value).replace(/"/g, ""), function(response){
-			document.location.href = "user.html?box=attention";
-		});
-	}
+ 	function getSomeHelp() {
+ 		console.log(JSON.stringify(document.getElementById("comment").value));
+ 		setAttention("help", "attention", JSON.stringify(document.getElementById("comment").value).replace(/"/g, ""), function(response){
+ 			document.location.href = "user.html?box=attention";
+ 		});
+ 	}
 
-	getAdmin();
-</script>
-</html>
+ 	getAdmin();
+ </script>
+ </html>

@@ -26,27 +26,62 @@
  		</div>
  		<div class="col-md-2">
  			<ul class="nav well">
- 				<li class="nav"><a href="user.html">Front Page</a></li>
- 				<li class="nav"><a href="database.html">Database</a></li>
- 				<li class="nav "><a href="usr.html">User Info</a></li>
- 				<li class="nav active" id="um" style="display:none"><a href="usrMgmt.html">User Managment</a></li>
+ 				<li class="nav">
+ 					<a href="user.html">
+ 						<span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+ 						Front Page
+ 					</a>
+ 				</li>
+ 				<li class="nav">
+ 					<a href="database.html">
+ 						<span class="glyphicon glyphicon-folder-close" aria-hidden="true"></span>
+ 						Database
+ 					</a>
+ 				</li>
+ 				<li class="nav">
+ 					<a href="usr.html">
+ 						<span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+ 						User Info
+ 					</a>
+ 				</li>
+ 				<li class="nav active">
+ 					<a href="grpMgmt.html">
+ 						<span class="glyphicon glyphicon-blackboard" aria-hidden="true"></span>
+ 						Group Managment
+ 					</a>
+ 				</li>
  				<ul class="">
- 					<li class="nav"><a href="usrMgmt.html">User Overview</a></li>
- 					<li class="nav"><a href="searchUsr.html">Search Users</a></li>
- 					<li class="nav"><a href="crtUsr.html">Create Users</a></li>
- 					<li class="nav active"><a href="grpMgmt.html">Group Managment</a></li>
- 					<ul class="">
- 						<li class="nav active"><a href="grpMgmt.html">Group List</a></li>
- 						<li class="nav"><a href="crtGrp.html">Create Croup</a></li>
- 					</ul>
+ 					<li class="nav active">
+ 						<a href="grpMgmt.html">
+ 							<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+ 							Group List
+ 						</a>
+ 					</li>
+ 					<li class="nav">
+ 						<a href="crtGrp.html">
+ 						+<span class="glyphicon glyphicon-blackboard" aria-hidden="true"></span>
+ 							Create Croup
+ 						</a>
+ 					</li>
  				</ul>
- 				<li class="nav disabled" id="dash" style="display:none"><a href="dash.html">Dashboard</a></li>
+ 				<li class="nav" id="um" style="display:none">
+ 					<a href="usrMgmt.html">
+ 						<span class="glyphicon glyphicon-briefcase" aria-hidden="true"></span>
+ 						User Managment
+ 					</a>
+ 				</li>
+ 				<li class="nav" id="dash" style="display:none">
+ 					<a href="dash.html">
+ 						<span class="glyphicon glyphicon-dashboard" aria-hidden="true"></span>
+ 						Dashboard
+ 					</a>
+ 				</li>
  			</ul>
  		</div>
  		<div class="col-md-10">
  			<div class="panel panel-primary fixed-margin">
  				<div class="panel-heading">
- 				<h3 class="panel-title"><a target="_blank" href="sysLog.html">All Groups in the system</a></h3>
+ 					<h3 class="panel-title"><a target="_blank" href="sysLog.html">All Groups in the system</a></h3>
  				</div>
  				<div class="panel-body"> </div>
  				<table class='table table-hover' id="usrTbl">

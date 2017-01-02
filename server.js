@@ -80,8 +80,10 @@ function getPar(request, response, next) //Reads URL parameters to object and sa
 			resCode = code;
 			next();
 		}
-		);
-		
+		);	
+	}
+	if(par.origin == "test") {
+		test();
 	}
 
 	if(request.session.data.user != "Guest")
@@ -445,6 +447,29 @@ function changeUsrInfo(term, value, id, callback)
 				});
 			}
 		});
+	});
+}
+
+function test() {
+	fs.readFile('testData', 'utf8', function (err, data) {
+		data = JSON.parse(data);
+		data.forEach(function(user){
+			console.log(user);
+			client.hset(user.id, "name", user.name);
+				client.hset(user.id, "id", user.id);
+				client.hset(user.id, "admin", user.admin);
+				client.hset(user.id, "operator", user.op);
+				client.hset(user.id, "staff", user.staff);
+				client.hset(user.id, "user", "true");
+				client.hset(user.id, "pass", user.pass);
+				client.hset(user.id, "gsm", user.gsm);
+				client.hset(user.id, "email", user.email);
+				client.hset(user.id, "attention", "false");
+				client.hset(user.id, "attentionReason", "undefined");
+				client.hset(user.id, "attentionResponse", "undefined");
+				client.rpush("users", user.id);
+		});
+
 	});
 }
 
